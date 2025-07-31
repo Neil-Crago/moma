@@ -10,7 +10,6 @@
 //! 3.  **Composite Influence**: Modeling how nearby composite numbers "influence" prime gaps.
 //! 4.  **Goldbach Projection**: Using the collected prime data to find Goldbach pairs.
 
-// Assuming your library is named `moma_crate` in your Cargo.toml
 use moma::{analysis, primes};
 use std::collections::{HashMap, HashSet};
 
