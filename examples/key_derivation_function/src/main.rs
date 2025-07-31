@@ -53,13 +53,17 @@ impl<'a> MomaKdf<'a> {
         let modulus_seed = Sha256::digest([self.password, self.salt].concat());
         let prime_seed = Sha256::digest([self.salt, self.password].concat());
 
-        // Convert seeds to numbers and find the next prime to get our starting parameters.
-        let modulus = primes::next_prime(u64::from_le_bytes(modulus_seed[..8].try_into().unwrap()));
-        let mut current_prime = primes::next_prime(u64::from_le_bytes(prime_seed[..8].try_into().unwrap()));
+        let modulus_u32 = u32::from_le_bytes(modulus_seed[..4].try_into().unwrap());
+        let prime_u32 = u32::from_le_bytes(prime_seed[..4].try_into().unwrap());
+
+        // The cast to u64 is necessary to match the type used in the moma crate.
+        let modulus = primes::next_prime(modulus_u32 as u64);
+        let mut current_prime = primes::next_prime(prime_u32 as u64);
         
         // --- 2. Iteration Phase ---
         // We use CompositeMass as it's a more complex strategy, making for a better KDF demo.
-        let ring = MomaRing::new(modulus, strategy::CompositeMass);
+        let ring = MomaRing::new(modulus, strategy::PrimeGap);
+        // let ring = MomaRing::new(modulus, strategy::CompositeMass);
         let mut derived_bytes = Vec::with_capacity(self.iterations as usize * 8);
 
         for _ in 0..self.iterations {

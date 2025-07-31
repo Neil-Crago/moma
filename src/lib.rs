@@ -227,6 +227,7 @@ pub mod analysis {
 /// NOTE: For a high-performance production crate, consider replacing these
 /// with a dependency on a specialized library like `primal`.
 pub mod primes {
+
     /// A basic primality test.
     pub fn is_prime(n: u64) -> bool {
         if n < 2 { return false; }
@@ -244,12 +245,14 @@ pub mod primes {
 
     /// Finds the next prime number strictly greater than `n`.
     pub fn next_prime(n: u64) -> u64 {
-        let mut x = n + 1;
+        if n < 2 { return 2; }
+        // Start with the next odd number.
+        let mut x = if n % 2 == 0 { n + 1 } else { n + 2 };
         loop {
             if is_prime(x) {
                 return x;
             }
-            x += 1;
+            x += 2; // Only check odd numbers.
         }
     }
 
