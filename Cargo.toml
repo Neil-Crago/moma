@@ -1,6 +1,6 @@
 [package]
 name = "moma"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2024"
 authors = ["Neil Crago <n.j.crago@gmail.com>"]
 description = "Moving Origin Modular Arithmetic (MOMA) is a library for modular arithmetic with a focus on performance and flexibility."
