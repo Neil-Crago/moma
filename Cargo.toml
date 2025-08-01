@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/neil-crago/moma"
 keywords = ["inertia", "math", "modulo", "cosmology", "gravity"]
 include = [
-    "src/**/*.rs",
+    "src/*.rs",
     "Cargo.toml",
     "README.md",
     "LICENSE-MIT",
