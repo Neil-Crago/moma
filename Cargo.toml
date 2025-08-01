@@ -3,10 +3,10 @@ name = "moma"
 version = "0.1.4"
 edition = "2024"
 authors = ["Neil Crago <n.j.crago@gmail.com>"]
-description = "Moving Origin Modular Arithmetic (MOMA) is a library for modular arithmetic with a focus on performance and flexibility."
+description = "Moving Origin Modular Arithmetic (MOMA), a library for modular arithmetic with a focus on performance and flexibility."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/neil-crago/moma"
-keywords = ["modular", "math", "goldbach", "barycentric", "number theory"]
+keywords = ["modular", "math", "goldbach", "barycentric", "prime"]
 include = ["src/lib.rs", "Cargo.toml", "README.md", "LICENSE-MIT", "LICENSE-APACHE"]
 
 
