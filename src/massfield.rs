@@ -73,6 +73,12 @@ pub struct OverlayRegistry {
     pub overlays: Vec<Box<dyn ModularOverlay>>,
 }
 
+impl Default for OverlayRegistry {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl OverlayRegistry {
     pub fn new() -> Self {
         Self { overlays: vec![] }
