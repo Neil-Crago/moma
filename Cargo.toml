@@ -7,8 +7,13 @@ description = "Moving Origin Modular Arithmetic (MOMA), a library for modular ar
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/neil-crago/moma"
 keywords = ["inertia", "math", "modulo", "cosmology", "gravity"]
-include = ["src/lib.rs", "Cargo.toml", "README.md", "LICENSE-MIT", "LICENSE-APACHE"]
-
+include = [
+    "src/**/*.rs",
+    "Cargo.toml",
+    "README.md",
+    "LICENSE-MIT",
+    "LICENSE-APACHE",
+]
 
 [dependencies]
 
