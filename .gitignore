@@ -1,3 +1,5 @@
 /target
 /examples/prime_gaps/target
 /examples/key_derivation_function/target/
+/examples/origin_drift/target
+/examples/mass_field/target

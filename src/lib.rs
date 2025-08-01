@@ -40,6 +40,9 @@
 //! assert_eq!(residue, 21);
 //! ```
 
+pub mod origin_drift;
+pub mod massfield;
+
 // Re-export key components for easier access.
 pub use crate::analysis::{CompositeDampener, MassField};
 pub use crate::core::{MomaRing, OriginStrategy};

@@ -1,0 +1,8 @@
+[package]
+name = "origin_drift"
+version = "0.1.0"
+edition = "2024"
+authors = ["Neil Crago <n.j.crago@gmail.com"]
+
+[dependencies]
+moma = {path = "../../../moma"}
