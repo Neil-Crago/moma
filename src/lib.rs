@@ -46,6 +46,9 @@
 pub mod analysis;
 pub mod core;
 pub mod massfield;
+pub mod entropy;      
+pub mod goldbach;    
+pub mod influence;   
 pub mod origin_drift;
 pub mod primes;
 pub mod strategy;
