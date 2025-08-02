@@ -65,9 +65,9 @@ moma = "0.1.9" # Replace with the latest version
 The easiest way to get started is to create a `MomaRing` and calculate the "signature" of a prime.
 
 ```rust
-use moma::core::MomaRing;
-use moma::primes;
-use moma::strategy;
+use moma::core::core::MomaRing;
+use moma::primes::primes;
+use moma::strategy::strategy;
 
 // 1. Create a MOMA ring with modulus 37 and the PrimeGap strategy.
 let ring = MomaRing::new(37, strategy::PrimeGap);
