@@ -1,37 +1,44 @@
-use moma::massfield::{MassFieldOverlay, OverlayRegistry}; 
-use std::collections::HashMap;
+//! # MassField Analysis Example
+//!
+//! This program demonstrates how to use the `MassField` struct from the `moma`
+//! crate to analyze the distribution of "composite mass" between prime numbers.
+//!
+//! It calculates the mass for a given range and prints the results, highlighting
+//! the prime gap with the highest concentration of composite matter.
+
+use moma::massfield::MassField;
 
 fn main() {
-    println!();
-    println!("Start of Mass Field Overlay Example");
-    println!();
-    let mut registry = OverlayRegistry::new();
+    println!("--- MassField Analysis ---");
+    println!("Analyzing composite mass in prime gaps from 1 to 200.\n");
 
-    let masses = HashMap::from([
-        (4, 2.0),
-        (8, 1.5),
-        (10, 3.0),
-    ]);
+    // 1. Define the analysis range and create a new MassField.
+    let start_range = 1;
+    let end_range = 200;
+    let field = MassField::new(start_range, end_range);
 
-    let mass_overlay = MassFieldOverlay {
-        modulus: 12,
-        masses,
-        radius: 6,
-    };
+    // 2. Generate the map of (prime, mass_in_next_gap).
+    let mass_map = field.generate_mass_map();
 
-    registry.register(Box::new(mass_overlay));
+    // 3. Find the prime followed by the gap with the most composite mass.
+    //    We use `max_by_key` to find the tuple with the largest second element (`mass`).
+    let heaviest_gap = mass_map.iter().max_by_key(|&(_, mass)| mass);
 
-    for origin in 0..12 {
-        let results = registry.apply_all(origin, 12);
-        for (name, distortions) in results {
-            println!("Overlay: {} at Origin {}", name, origin);
-            for (r, d) in (0..12).zip(distortions.iter()) {
-                println!("Residue {} → Distortion {:.2}", r, d);
-            }
-            println!("---");
-        }
+    // 4. Print the results.
+    println!("Calculated Composite Mass for each Prime Gap:");
+    for (prime, mass) in &mass_map {
+        println!("  - Gap after p={:<3}: Mass = {}", prime, mass);
     }
-    println!();
-    println!("End of Mass Field Overlay Example");
-    println!();
+
+    if let Some((prime, mass)) = heaviest_gap {
+        println!("\n-------------------------------------------------");
+        println!(
+            "🏆 The gap with the most composite mass follows p = {}.",
+            prime
+        );
+        println!("   This gap has a total composite mass of {}.", mass);
+        println!("-------------------------------------------------");
+    } else {
+        println!("\nNo prime gaps were found in the specified range.");
+    }
 }

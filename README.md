@@ -13,35 +13,27 @@ The crate is designed for researchers and developers working in number theory, c
 
 -----
 
-## Core Concepts
+Core Concepts
+The MOMA framework is built on a few simple but powerful concepts:
 
-The MOMA framework is built on two simple but powerful concepts:
+MomaRing: The primary object for all calculations. A ring is defined by a modulus and a chosen OriginStrategy.
 
-  * **`MomaRing`**: The primary object for all calculations. A ring is defined by a `modulus` and a chosen `OriginStrategy`.
+OriginStrategy: A trait that defines how the origin moves. This makes the framework highly extensible. You can define custom logic for the origin's movement based on any property of the contextual prime.
 
-  * **`OriginStrategy`**: A trait that defines *how* the origin moves. This makes the framework highly extensible. You can define custom logic for the origin's movement based on any property of the contextual prime.
+MassField: An analysis tool for mapping primes to the "composite mass" (sum of prime factors) found in the gap immediately following them.
 
-The core calculation is the MOMA residue, defined as:
+OriginDrift: A generic tool for measuring the volatility or "drift" of MOMA signatures for any given OriginStrategy over a sequence of primes.
 
-$residue = (value + origin) \\pmod{modulus}$
+Features
+Flexible Core: A powerful and extensible system based on the MomaRing and OriginStrategy trait.
 
-### Built-in Strategies
+Advanced Analysis Tools: Includes high-level structs like MassField and OriginDrift for statistical analysis.
 
-The crate includes several pre-built strategies to get you started:
+Cryptographic Primitives: Demonstrates how MOMA can be used to build cryptographic components like a Key Derivation Function.
 
-  * `strategy::PrimeGap`: The origin is the gap between a prime and its predecessor ($p - p\_{prev}$).
-  * `strategy::CompositeMass`: The origin is the sum of prime factors of all composite numbers in the gap between a prime and its successor.
-  * `strategy::Fixed`: A simple strategy where the origin is a fixed constant.
+Prime Number Utilities: A helper primes module for primality testing and prime generation.
 
------
-
-## Features
-
-  * **Flexible Core**: A powerful and extensible system based on the `MomaRing` and `OriginStrategy` trait.
-  * **Analysis Tools**: Includes high-level structs like `PrimeGapField` for statistical analysis of prime gaps.
-  * **Cryptographic Primitives**: Demonstrates how MOMA can be used to build cryptographic components like the `MomaKdf` (Key Derivation Function).
-  * **Prime Number Utilities**: A helper `primes` module for efficient primality testing and prime generation.
-  * **Pure Rust**: Built with safe, idiomatic Rust.
+Pure Rust: Built with safe, idiomatic Rust.
 
 -----
 
@@ -144,6 +136,52 @@ let key = kdf.derive_key();
 
 println!("Derived AES-256 Key: {}", hex::encode(&key));
 ```
+
+#### Example 3: Analyzing Composite Mass
+
+Use MassField to analyze the distribution of composite matter between primes.
+
+```rust
+use moma::massfield::MassField;
+
+// Create a field to analyze the range from 1 to 50.
+let field = MassField::new(1, 50);
+let mass_map = field.generate_mass_map();
+
+// For p=13, p_next=17. Composites are 14, 15, 16.
+// Mass = mass(14) + mass(15) + mass(16) = 2 + 2 + 4 = 8.
+if let Some((prime, mass)) = mass_map.iter().find(|(p, _)| *p == 13) {
+    println!("The composite mass after prime {} is {}", prime, mass);
+    assert_eq!(*mass, 8);
+}
+```
+
+#### Example : Measuring Strategy Volatility
+
+Use OriginDrift to compare the stability of different OriginStrategy implementations.
+
+```rust
+use moma::origin_drift::OriginDrift;
+use moma::strategy;
+use moma::primes
+
+// Create a drift analyzer for the PrimeGap strategy.
+let mut drift_analyzer = OriginDrift::new(100, strategy::PrimeGap);
+
+// Feed it a sequence of primes.
+let mut p = 3;
+for _ in 0..10 {
+    drift_analyzer.next(p);
+    p = primes::next_prime(p);
+}
+
+// A higher drift magnitude means the strategy is more volatile.
+println!(
+    "Drift magnitude for PrimeGap strategy: {:.2}",
+    drift_analyzer.drift_magnitude()
+);
+```
+
 
 ## Contributing
 
