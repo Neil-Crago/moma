@@ -18,7 +18,8 @@
 //! ## Example Usage
 //!
 //! ```
-//! use moma::{MomaRing, strategy}; 
+//! use moma::core::core::{MomaRing};
+//! use mom::strategy::strategy; 
 //! 
 //!
 //! // Create a MOMA ring with modulus 37.
