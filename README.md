@@ -13,27 +13,28 @@ The crate is designed for researchers and developers working in number theory, c
 
 -----
 
-Core Concepts
+## Core Concepts
 The MOMA framework is built on a few simple but powerful concepts:
 
-MomaRing: The primary object for all calculations. A ring is defined by a modulus and a chosen OriginStrategy.
+* MomaRing: The primary object for all calculations. A ring is defined by a modulus and a chosen OriginStrategy.
 
-OriginStrategy: A trait that defines how the origin moves. This makes the framework highly extensible. You can define custom logic for the origin's movement based on any property of the contextual prime.
+* OriginStrategy: A trait that defines how the origin moves. This makes the framework highly extensible. You can define custom logic for the origin's movement based on any property of the contextual prime.
 
-MassField: An analysis tool for mapping primes to the "composite mass" (sum of prime factors) found in the gap immediately following them.
+* MassField: An analysis tool for mapping primes to the "composite mass" (sum of prime factors) found in the gap immediately following them.
 
-OriginDrift: A generic tool for measuring the volatility or "drift" of MOMA signatures for any given OriginStrategy over a sequence of primes.
+* OriginDrift: A generic tool for measuring the volatility or "drift" of MOMA signatures for any given OriginStrategy over a sequence of primes.
 
-Features
-Flexible Core: A powerful and extensible system based on the MomaRing and OriginStrategy trait.
+## Features
 
-Advanced Analysis Tools: Includes high-level structs like MassField and OriginDrift for statistical analysis.
+* Flexible Core: A powerful and extensible system based on the MomaRing and OriginStrategy trait.
 
-Cryptographic Primitives: Demonstrates how MOMA can be used to build cryptographic components like a Key Derivation Function.
+* Advanced Analysis Tools: Includes high-level structs like MassField and OriginDrift for statistical analysis.
 
-Prime Number Utilities: A helper primes module for primality testing and prime generation.
+* Cryptographic Primitives: Demonstrates how MOMA can be used to build cryptographic components like a Key Derivation Function.
 
-Pure Rust: Built with safe, idiomatic Rust.
+* Prime Number Utilities: A helper primes module for primality testing and prime generation.
+
+* Pure Rust: Built with safe, idiomatic Rust.
 
 -----
 
@@ -43,7 +44,7 @@ Add MOMA to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-moma = "0.1.8"
+moma = "0.1.9"
 ```
 
 -----
