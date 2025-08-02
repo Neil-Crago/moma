@@ -5,9 +5,9 @@
 [](https://opensource.org/licenses/MIT)
 [](https://www.google.com/search?q=https://github.com/neil-crago/moma/actions)
 
-**MOMA** is a Rust framework for exploring number theory and cryptography through the lens of **Moving Origin Modular Arithmetic**.
+**MOMA** is a Rust framework for exploring complex systems including cosmology, number theory, algorithmic data analysis and cryptography through the lens of **Moving Origin Modular Arithmetic**.
 
-The crate is designed for researchers and developers working in number theory, cryptography, and algorithmic data analysis who are interested in a novel, relational framework for analyzing the properties of integers.
+It should interest anyone who is interested in a novel, relational framework for analyzing the properties of complex systems.
 
 -----
 
@@ -115,53 +115,8 @@ Use `OriginDrift` to compare the stability of different `OriginStrategy` impleme
 
 ```rust
 use moma::origin_drift::OriginDrift;
-use moma::strategy;
-use moma::primes;
-
-// Create a drift analyzer for the PrimeGap strategy.
-let mut drift_analyzer = OriginDrift::new(100, strategy::PrimeGap);
-
-// Feed it a sequence of primes.
-let mut p = 3;
-for _ in 0..10 {
-    drift_analyzer.next(p);
-    p = primes::next_prime(p);
-}
-
-// A higher drift magnitude means the strategy is more volatile.
-println!(
-    "Drift magnitude for PrimeGap strategy: {:.2}",
-    drift_analyzer.drift_magnitude()
-);
-```
-
-### Example 3: Analyzing Composite Mass
-
-Use MassField to analyze the distribution of composite matter between primes.
-
-```rust
-use moma::massfield::MassField;
-
-// Create a field to analyze the range from 1 to 50.
-let field = MassField::new(1, 50);
-let mass_map = field.generate_mass_map();
-
-// For p=13, p_next=17. Composites are 14, 15, 16.
-// Mass = mass(14) + mass(15) + mass(16) = 2 + 2 + 4 = 8.
-if let Some((prime, mass)) = mass_map.iter().find(|(p, _)| *p == 13) {
-    println!("The composite mass after prime {} is {}", prime, mass);
-    assert_eq!(*mass, 8);
-}
-```
-
-### Example 4: Measuring Strategy Volatility
-
-Use OriginDrift to compare the stability of different OriginStrategy implementations.
-
-```rust
-use moma::origin_drift::OriginDrift;
-use moma::strategy;
-use moma::primes
+use moma::strategy::strategy;
+use moma::primes::primes;
 
 // Create a drift analyzer for the PrimeGap strategy.
 let mut drift_analyzer = OriginDrift::new(100, strategy::PrimeGap);
