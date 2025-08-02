@@ -4,10 +4,10 @@
 //! low-entropy secret (like a password) and derives a strong, fixed-length
 //! cryptographic key from it.
 
-use moma::core::MomaRing;
+use moma::core::core::MomaRing;
 
-use moma::primes;
-use moma::strategy;
+use moma::primes::primes;
+use moma::strategy::strategy;
 
 use sha2::{Digest, Sha256};
 
@@ -86,7 +86,7 @@ impl<'a> MomaKdf<'a> {
 
 
 fn main() {
-    println!("--- MOMA KDF Demonstration --- 🔑");
+    println!("\n--- MOMA KDF Demonstration --- 🔑");
 
     let password = "a_very_secure_password_123";
     let salt = "a_unique_random_salt_for_each_user"; // In a real app, this MUST be random.

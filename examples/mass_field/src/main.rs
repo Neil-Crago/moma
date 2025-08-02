@@ -9,7 +9,7 @@
 use moma::massfield::MassField;
 
 fn main() {
-    println!("--- MassField Analysis ---");
+    println!("\n--- MassField Analysis ---");
     println!("Analyzing composite mass in prime gaps from 1 to 200.\n");
 
     // 1. Define the analysis range and create a new MassField.

@@ -10,7 +10,7 @@
 //! 3.  **Composite Influence**: Modeling how nearby composite numbers "influence" prime gaps.
 //! 4.  **Goldbach Projection**: Using the collected prime data to find Goldbach pairs.
 
-use moma::{analysis, primes};
+use moma::primes::primes;
 use std::collections::{HashMap, HashSet};
 
 // --- Main Analysis Structures ---
@@ -212,7 +212,7 @@ impl CompositeInfluence {
 // --- Main Application Logic ---
 
 fn main() {
-    println!("--- Prime Gap Field Analysis --- 🌌");
+    println!("\n--- Prime Gap Field Analysis --- 🌌");
 
     // 1. Generate a list of primes to analyze.
     let primes: Vec<u64> = (1..=100).filter(|&n| primes::is_prime(n)).collect();
