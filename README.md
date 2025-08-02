@@ -43,7 +43,7 @@ Add MOMA to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-moma = "0.1.7"
+moma = "0.1.8"
 ```
 
 -----
