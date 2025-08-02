@@ -1,5 +1,5 @@
 use crate::barycentric::OriginShift;
-use crate::resonance::{ResonanceDetector, FFTResonance, AutoCorrelationResonance};
+use crate::resonance::ResonanceDetector;
 use crate::utils::write_csv;
 
 
