@@ -7,7 +7,7 @@
 use moma::goldbach::GoldbachProjector;
 
 fn main() {
-    println!("--- Goldbach Projector Demonstration ---");
+    println!("\n--- Goldbach Projector Demonstration ---");
 
     // 1. Create a projector with a database of primes up to 1000.
     //    This is efficient because the prime set is generated only once.
