@@ -1,98 +1,62 @@
-pub use crate::massfield::massfield_overlay::{
-    MassFieldOverlay, ModularOverlay, OverlayRegistry
-};
+use crate::primes::primes;
 
-pub mod massfield_overlay {
-use std::collections::HashMap;    
-/// Represents a mass field over modular space
-pub struct MassFieldOverlay {
-    pub modulus: usize,
-    pub masses: HashMap<usize, f64>, // composite → mass
-    pub radius: usize,               // influence radius
+/// A tool to analyze the "mass" of composite numbers between consecutive primes.
+///
+/// This struct defines a range and can generate a map of each prime in that range
+/// to the "composite mass" found in the gap immediately following it. The "mass"
+/// is the sum of the count of prime factors for each composite number.
+pub struct MassField {
+    /// The start of the number range to analyze.
+    pub range_start: u64,
+    /// The end of the number range to analyze.
+    pub range_end: u64,
 }
 
-/// Result of applying mass field to a residue ring
-#[derive(Debug)]
-pub struct DistortedResidueField {
-    pub origin: usize,
-    pub residues: Vec<usize>,
-    pub distortions: Vec<f64>, // distortion per residue
-}
-
-impl MassFieldOverlay {
-    /// Apply mass field to a residue ring at given origin
-    pub fn apply(&self, origin: usize) -> DistortedResidueField {
-        let residues: Vec<usize> = (0..self.modulus)
-            .map(|x| (x + self.modulus - origin) % self.modulus)
-            .collect();
-
-        let distortions: Vec<f64> = residues
-            .iter()
-            .map(|&r| {
-                self.masses.iter().map(|(&comp, &mass)| {
-                    let dist = ((r as isize - comp as isize).abs().min(self.radius as isize)) as f64;
-                    if dist == 0.0 { mass } else { mass / dist }
-                }).sum()
-            })
-            .collect();
-
-        DistortedResidueField {
-            origin,
-            residues,
-            distortions,
+impl MassField {
+    /// Creates a new `MassField` for a given range.
+    pub fn new(range_start: u64, range_end: u64) -> Self {
+        Self {
+            range_start,
+            range_end,
         }
     }
-}
 
+    /// Generates a map of `(prime, composite_mass_in_next_gap)`.
+    ///
+    /// - It iterates through each prime `p` within the specified range.
+    /// - For each `p`, it calculates the total composite mass in the interval `(p, p_next)`.
+    /// - Returns a `Vec` of tuples, where each tuple contains the starting prime
+    ///   and the calculated mass of the subsequent gap.
+    ///
+    /// # Example
+    /// ```
+    /// // use moma::massfield::MassField; // Assuming moma is your crate name
+    /// let field = MassField::new(1, 20);
+    /// let mass_map = field.generate_mass_map();
+    /// // For p=13, p_next=17. Composites are 14, 15, 16.
+    /// // Mass = mass(14) + mass(15) + mass(16) = 2 + 2 + 4 = 8.
+    /// assert!(mass_map.contains(&(13, 8)));
+    /// ```
+    pub fn generate_mass_map(&self) -> Vec<(u64, u64)> {
+        let mut map = Vec::new();
+        // Start with the first prime at or after the range_start.
+        let mut p = primes::next_prime(self.range_start.saturating_sub(1));
 
-pub trait ModularOverlay {
-    fn apply(&self, origin: usize, modulus: usize) -> Vec<f64>;
-    fn name(&self) -> &str;
-}
+        while p < self.range_end {
+            let p_next = primes::next_prime(p);
+            // Stop if the next prime goes beyond the desired range.
+            if p_next > self.range_end {
+                break;
+            }
 
-impl ModularOverlay for MassFieldOverlay {
-    fn apply(&self, origin: usize, modulus: usize) -> Vec<f64> {
-        let residues: Vec<usize> = (0..modulus)
-            .map(|x| (x + modulus - origin) % modulus)
-            .collect();
+            let mass = (p + 1..p_next)
+                .filter(|&n| !primes::is_prime(n))
+                .map(primes::prime_factor_mass)
+                .sum();
 
-        residues.iter().map(|&r| {
-            self.masses.iter().map(|(&comp, &mass)| {
-                let dist = ((r as isize - comp as isize).abs().min(self.radius as isize)) as f64;
-                if dist == 0.0 { mass } else { mass / dist }
-            }).sum()
-        }).collect()
-    }
-
-    fn name(&self) -> &str {
-        "MassFieldOverlay"
-    }
-}
-
-pub struct OverlayRegistry {
-    pub overlays: Vec<Box<dyn ModularOverlay>>,
-}
-
-impl Default for OverlayRegistry {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl OverlayRegistry {
-    pub fn new() -> Self {
-        Self { overlays: vec![] }
-    }
-
-    pub fn register(&mut self, overlay: Box<dyn ModularOverlay>) {
-        self.overlays.push(overlay);
-    }
-
-    pub fn apply_all(&self, origin: usize, modulus: usize) -> Vec<(String, Vec<f64>)> {
-        self.overlays.iter().map(|o| {
-            (o.name().to_string(), o.apply(origin, modulus))
-        }).collect()
+            map.push((p, mass));
+            p = p_next;
+        }
+        map
     }
 }
-}
-
