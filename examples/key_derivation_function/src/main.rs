@@ -4,10 +4,10 @@
 //! low-entropy secret (like a password) and derives a strong, fixed-length
 //! cryptographic key from it.
 
-use moma::core::core::MomaRing;
+use moma::core::MomaRing;
 
-use moma::primes::primes;
-use moma::strategy::strategy;
+use moma::primes;
+use moma::strategy;
 
 use sha2::{Digest, Sha256};
 

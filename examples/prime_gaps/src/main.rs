@@ -10,7 +10,7 @@
 //! 3.  **Composite Influence**: Modeling how nearby composite numbers "influence" prime gaps.
 //! 4.  **Goldbach Projection**: Using the collected prime data to find Goldbach pairs.
 
-use moma::primes::primes;
+use moma::primes;
 use std::collections::{HashMap, HashSet};
 
 // --- Main Analysis Structures ---

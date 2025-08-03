@@ -1,53 +1,47 @@
 # MOMA: Moving Origin Modular Arithmetic
 
-[](https://www.google.com/search?q=https://crates.io/crates/moma)
-[](https://www.google.com/search?q=https://docs.rs/moma)
-[](https://opensource.org/licenses/MIT)
-[](https://www.google.com/search?q=https://github.com/neil-crago/moma/actions)
+[![Crates.io](https://img.shields.io/crates/v/moma.svg?style=flat-square)](https://crates.io/crates/moma)
+[![Docs.rs](https://img.shields.io/docsrs/moma?style=flat-square)](https://docs.rs/moma)
+[![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue?style=flat-square)](https://opensource.org/licenses/MIT)
+[![CI](https://github.com/neil-crago/moma/actions/workflows/ci.yml/badge.svg)](https://github.com/neil-crago/moma/actions)
 
-**MOMA** is a Rust framework for exploring complex systems including cosmology, number theory, algorithmic data analysis, bioinformatics and cryptography through the lens of **Moving Origin Modular Arithmetic**.
+**MOMA** is a Rust framework for exploring number theory, cryptography, and bioinformatics through the lens of **Moving Origin Modular Arithmetic**.
 
-It should interest anyone who is interested in a novel, relational framework for analyzing the properties of complex systems.
+The crate is designed for researchers and developers who are interested in a novel, relational framework for analyzing  complex sequences.
 
------
+---
 
 ## The Core Idea: A Barycenter for Numbers
 
 The inspiration for this crate comes from the concept of a **barycenter** in astrophysics. Just as the Earth and Moon orbit a common center of mass that is not the exact center of the Earth, MOMA treats modular arithmetic as a system where the "zero point" or "origin" is not fixed.
 
-This origin shifts dynamically based on a contextual value—typically a prime number `p`—and the chosen `OriginStrategy`. This provides a novel relational framework for analyzing the properties of integers, much like understanding the true orbital mechanics of our solar system.
+This origin shifts dynamically based on a contextual value—typically a prime number `p`—and the chosen `OriginStrategy`. This provides a novel relational framework for analyzing complex systems.
 
 > The original inspiration came from this NASA article: [What Is a Barycenter?](https://spaceplace.nasa.gov/barycenter/en/)
 
------
+---
 
 ## Core Concepts
 
 The MOMA framework is built on a few simple but powerful concepts:
 
-  * **`MomaRing`**: The primary object for all calculations. A ring is defined by a `modulus` and a chosen `OriginStrategy`.
+* **`MomaRing`**: The primary object for all calculations. A ring is defined by a `modulus` and a chosen `OriginStrategy`.
+* **`OriginStrategy`**: A trait that defines *how* the origin moves, making the framework highly extensible.
+* **Analysis Tools**: A suite of modular tools for deeper analysis:
+    * **Number Theory**: `MassField`, `OriginDrift`, `CompositeInfluence`, `CompositeDampener`, `GoldbachProjector`, `Entropy`, and `ResonanceFinder`.
+    * **Bioinformatics**: `BioSigAnalyzer`, `CodonTable`, and `Mutation` for mapping numeric signatures to biological events.
 
-  * **`OriginStrategy`**: A trait that defines *how* the origin moves. This makes the framework highly extensible.
-
-  * **Analysis Tools**: A suite of modular tools for deeper analysis:
-
-      * **`MassField`**: Maps primes to the "composite mass" in the gap immediately following them.
-      * **`OriginDrift`**: Measures the volatility or "drift" of MOMA signatures for any given strategy.
-      * **`CompositeInfluence`**: Models the "gravitational" influence of nearby composite numbers.
-      * **`GoldbachProjector`**: An efficient tool for finding prime pairs for even numbers.
-      * **`Entropy`**: A generic calculator for the Shannon entropy of a sequence.
-
------
+---
 
 ## Features
 
-  * **Flexible Core**: A powerful and extensible system based on the `MomaRing` and `OriginStrategy` trait.
-  * **Advanced Analysis Tools**: A suite of high-level structs for statistical and number-theoretic analysis.
-  * **Cryptographic Primitives**: Demonstrates how MOMA can be used to build components like a Key Derivation Function.
-  * **Prime Number Utilities**: A helper `primes` module for primality testing and prime generation.
-  * **Pure Rust**: Built with safe, idiomatic Rust.
+* **Flexible Core**: A powerful and extensible system based on the `MomaRing` and `OriginStrategy` trait.
+* **Advanced Analysis Tools**: A suite of high-level structs for statistical, number-theoretic, and bioinformatics analysis.
+* **Cryptographic Primitives**: Demonstrates how MOMA can be used to build components like a Key Derivation Function.
+* **Prime Number Utilities**: A helper `primes` module for primality testing and prime generation.
+* **Pure Rust**: Built with safe, idiomatic Rust.
 
------
+---
 
 ## Installation
 
@@ -55,96 +49,58 @@ Add MOMA to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-moma = "0.2.3" # Replace with the latest version
-```
+moma = "0.1.9" # Replace with the latest version
+````
 
 -----
 
-## Quick Start
+## Exploring MOMA
 
-The easiest way to get started is to create a `MomaRing` and calculate the "signature" of a prime.
+MOMA is a toolkit for exploration across different domains.
 
-```rust
-use moma::core::MomaRing;
-use moma::primes;
-use moma::strategy;
+### Example 1: Finding "Resonance"
 
-// 1. Create a MOMA ring with modulus 37 and the PrimeGap strategy.
-let ring = MomaRing::new(37, strategy::PrimeGap);
-
-// 2. Let's analyze the prime p = 29.
-let p = 29;
-
-// 3. Calculate the MOMA signature.
-//    The origin for p=29 is (29 - 23) = 6.
-//    The value is p + p_prev = 29 + 23 = 52.
-//    The residue is (52 + 6) % 37 = 21.
-let signature = ring.signature(p);
-
-println!("For p={}, the MOMA signature is: {}", p, signature);
-assert_eq!(signature, 21);
-```
-
------
-
-## Exploring Further
-
-MOMA is more than just a simple calculator; it's a toolkit for exploration.
-
-### Example 1: Finding Goldbach Pairs
-
-Use the `GoldbachProjector` to efficiently find prime pairs for an even number.
+Use the `ResonanceFinder` to find primes where the MOMA signature is a multiple of another property of the prime, such as its number of prime factors (`prime_factor_mass`).
 
 ```rust
-use moma::goldbach::GoldbachProjector;
-
-// Create a projector with a database of primes up to 1000.
-let projector = GoldbachProjector::new(1000);
-
-// Find all pairs for the number 96.
-let pairs = projector.project(96);
-
-println!("Found {} Goldbach pairs for 96.", pairs.len());
-// Example pair: (7, 89)
-assert!(pairs.contains(&(7, 89)));
-```
-
-### Example 2: Measuring Strategy Volatility
-
-Use `OriginDrift` to compare the stability of different `OriginStrategy` implementations.
-
-```rust
-use moma::origin_drift::OriginDrift;
+use moma::resonance::ResonanceFinder;
 use moma::strategy;
 use moma::primes;
 
-// Create a drift analyzer for the PrimeGap strategy.
-let mut drift_analyzer = OriginDrift::new(100, strategy::PrimeGap);
-
-// Feed it a sequence of primes.
-let mut p = 3;
-for _ in 0..10 {
-    drift_analyzer.next(p);
-    p = primes::next_prime(p);
-}
-
-// A higher drift magnitude means the strategy is more volatile.
-println!(
-    "Drift magnitude for PrimeGap strategy: {:.2}",
-    drift_analyzer.drift_magnitude()
+// Find primes where the signature (using CompositeMass strategy)
+// is divisible by the prime's factor mass.
+let finder = ResonanceFinder::new(
+    100,
+    strategy::CompositeMass,
+    primes::prime_factor_mass,
 );
+
+// Search for resonance events in the range 1 to 500.
+let resonances = finder.find_in_range(1, 500);
+
+println!("Found {} resonance events.", resonances.len());
+for (prime, signature) in resonances {
+    println!("  - Resonance at p={} with signature {}", prime, signature);
+}
 ```
-### Other examples:
 
-In the examples folder are demo versions of various applications of the MOMA Framework, these include:
+### Example 2: Bioinformatics Signature Analysis
 
-* **bioinformatics**
-* **cosmology**
-* **A goldbach projector**
-* **A key derivation function (KDF)**
-* **A Mass Field demonstrator** 
-* **An Origin drift demo**
-* **A Prime Gaps demo**
+Use the `BioSigAnalyzer` to map MOMA signatures to simulated genetic mutations.
+
+```rust
+use moma::biosig::BioSigAnalyzer;
+use moma::strategy;
+
+let analyzer = BioSigAnalyzer::new(60, strategy::CompositeMass);
+let dna_sequence = "AGCTGCGATCGTACGATCGATCGTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCT";
+
+// Analyze the mutational effect of the signature derived from prime 13.
+if let Some((signature, mutation)) = analyzer.analyze(13, dna_sequence) {
+    println!("Signature for p=13 is {}", signature);
+    println!("Resulting mutation type: {:?}", mutation.mutation_type);
+}
+```
 
 -----
 
@@ -156,7 +112,7 @@ Contributions are welcome\! If you have an idea for a new `OriginStrategy`, an a
 
 This project is licensed under either of:
 
-  * Apache License, Version 2.0, ([LICENSE-APACHE](https://www.google.com/search?q=LICENSE-APACHE) or [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0))
-  * MIT license ([LICENSE-MIT](https://www.google.com/search?q=LICENSE-MIT) or [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT))
+  * Apache License, Version 2.0, ([LICENSE-APACHE](https://www.google.com/search?q=LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+  * MIT license ([LICENSE-MIT](https://www.google.com/search?q=LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
 at your option.

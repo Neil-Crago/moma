@@ -1,96 +1,81 @@
-use rand::Rng;
+//! # Codon Module
+//!
+//! Provides structures and logic for working with genetic codons and the standard DNA codon table.
 
-pub fn encode_codon(codon: &str) -> Option<usize> {
-    let base_map = |c| match c {
-        'A' => Some(0),
-        'C' => Some(1),
-        'G' => Some(2),
-        'T' => Some(3),
-        _ => None,
-    };
-    let chars: Vec<_> = codon.chars().collect();
-    if chars.len() != 3 {
-        return None;
+use std::collections::HashMap;
+
+/// Represents a single amino acid or a Stop signal.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum AminoAcid {
+    Alanine, Arginine, Asparagine, AsparticAcid, Cysteine,
+    GlutamicAcid, Glutamine, Glycine, Histidine, Isoleucine,
+    Leucine, Lysine, Methionine, Phenylalanine, Proline,
+
+    Serine, Threonine, Tryptophan, Tyrosine, Valine,
+    Stop, // Represents a translation stop signal
+}
+
+/// A struct that holds the standard DNA codon translation table.
+/// It maps three-letter DNA codons (e.g., "AUG") to their corresponding amino acids.
+#[derive(Debug)]
+pub struct CodonTable {
+    map: HashMap<String, AminoAcid>,
+}
+
+impl Default for CodonTable {
+    /// Creates a new `CodonTable` populated with the standard genetic code.
+    fn default() -> Self {
+        let mut map = HashMap::new();
+        // Alanine
+        map.insert("GCU".to_string(), AminoAcid::Alanine);
+        map.insert("GCC".to_string(), AminoAcid::Alanine);
+        map.insert("GCA".to_string(), AminoAcid::Alanine);
+        map.insert("GCG".to_string(), AminoAcid::Alanine);
+        // Arginine
+        map.insert("CGU".to_string(), AminoAcid::Arginine);
+        map.insert("CGC".to_string(), AminoAcid::Arginine);
+        map.insert("CGA".to_string(), AminoAcid::Arginine);
+        map.insert("CGG".to_string(), AminoAcid::Arginine);
+        map.insert("AGA".to_string(), AminoAcid::Arginine);
+        map.insert("AGG".to_string(), AminoAcid::Arginine);
+        // ... and so on for all other amino acids ...
+        // Phenylalanine
+        map.insert("UUU".to_string(), AminoAcid::Phenylalanine);
+        map.insert("UUC".to_string(), AminoAcid::Phenylalanine);
+        // Leucine
+        map.insert("UUA".to_string(), AminoAcid::Leucine);
+        map.insert("UUG".to_string(), AminoAcid::Leucine);
+        map.insert("CUU".to_string(), AminoAcid::Leucine);
+        map.insert("CUC".to_string(), AminoAcid::Leucine);
+        map.insert("CUA".to_string(), AminoAcid::Leucine);
+        map.insert("CUG".to_string(), AminoAcid::Leucine);
+        // Stop codons
+        map.insert("UAA".to_string(), AminoAcid::Stop);
+        map.insert("UAG".to_string(), AminoAcid::Stop);
+        map.insert("UGA".to_string(), AminoAcid::Stop);
+        // Methionine (Start codon)
+        map.insert("AUG".to_string(), AminoAcid::Methionine);
+
+        Self { map }
     }
-    Some(
-        base_map(chars[0])? * 16 +
-        base_map(chars[1])? * 4 +
-        base_map(chars[2])?
-    )
 }
 
-pub struct CodonRing {
-    pub residues: Vec<usize>, // codon values
-    pub origin: usize,
-    pub modulus: usize,
-}
-
-impl CodonRing {
-    pub fn from_codons(codons: &[&str], origin: usize) -> Self {
-        let residues = codons.iter()
-            .filter_map(|c| encode_codon(c))
-            .collect();
-        CodonRing {
-            residues,
-            origin,
-            modulus: 64,
-        }
+impl CodonTable {
+    /// Creates a new, populated `CodonTable`.
+    pub fn new() -> Self {
+        Self::default()
     }
-}
 
-impl CodonRing {
-    pub fn drift_origin(&mut self, delta: isize) {
-        let new_origin = ((self.origin as isize + delta) % self.modulus as isize + self.modulus as isize) % self.modulus as isize;
-        self.origin = new_origin as usize;
-    }
-}
-
-impl CodonRing {
-    pub fn shifted_residues(&self) -> Vec<usize> {
-        self.residues.iter()
-            .map(|r| (r + self.origin) % self.modulus)
-            .collect()
-    }
-}
-
-pub struct EntropyPulse {
-    pub strength: f64,       // 0.0 to 1.0
-    pub bias: Option<usize>, // Optional target residue
-    pub mode: PulseMode,
-}
-
-pub enum PulseMode {
-    OriginDrift,
-    ResiduePerturb,
-    TargetedDisruption,
-}
-
-impl CodonRing {
-    pub fn apply_entropy_pulse(&mut self, pulse: &EntropyPulse) {
-        match pulse.mode {
-            PulseMode::OriginDrift => {
-                let delta = ((pulse.strength * self.modulus as f64).round() as isize)
-                    * if rand::random::<bool>() { 1 } else { -1 };
-                self.drift_origin(delta);
-            }
-            PulseMode::ResiduePerturb => {
-                for r in &mut self.residues {
-                    *r = (*r + rand::rng().random_range(0u32..self.modulus as u32) as usize) % self.modulus;
-                    if rand::random::<f64>() < pulse.strength {
-                        *r = (*r + (rand::rng().random_range(0u32..self.modulus as u32) as usize)) % self.modulus;
-                    }
-                }
-            }
-            PulseMode::TargetedDisruption => {
-                if let Some(target) = pulse.bias {
-                    for r in &mut self.residues {
-                        *r = rand::rng().random_range(0..self.modulus);
-                        if *r == target && rand::random::<f64>() < pulse.strength {
-                            *r = rand::rng().random_range(0..self.modulus);
-                        }
-                    }
-                }
-            }
-        }
+    /// Translates a three-letter DNA codon string into an `Option<AminoAcid>`.
+    ///
+    /// # Arguments
+    /// * `codon` - A string slice representing the 3-letter codon (e.g., "AUG").
+    ///
+    /// # Returns
+    /// `Some(AminoAcid)` if the codon is valid, or `None` if it is not found in the table.
+    pub fn translate(&self, codon: &str) -> Option<AminoAcid> {
+        // In a real-world scenario, you might want to handle 'T' vs 'U' (Thymine vs Uracil)
+        let rna_codon = codon.replace('T', "U");
+        self.map.get(&rna_codon).cloned()
     }
 }

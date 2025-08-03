@@ -6,4 +6,12 @@
 /examples/cosmology/target
 /examples/goldbach_projector/target
 /examples/bioinformatics/target
+/examples/prime_gaps/Cargo.lock
+/examples/key_derivation_function/Cargo.lock
+/examples/origin_drift/Cargo.lock
+/examples/mass_field/Cargo.lock
+/examples/cosmology/Cargo.lock
+/examples/goldbach_projector/Cargo.lock
+/examples/bioinformatics/Cargo.lock
+Cargo.lock
 

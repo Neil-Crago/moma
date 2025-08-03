@@ -6,7 +6,7 @@ authors = ["Neil Crago"]
 description = "Moving Origin Modular Arithmetic (MOMA), a library for modeling complex systems"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/neil-crago/moma"
-keywords = ["modulo", "Mathematics", "complex-systems", "number-theory", "barycentric"]
+keywords = ["modulo", "Mathematics", "complex-systems", "number-theory", "bioinformatics"]
 include = [
     "src/*.rs",
     "Cargo.toml",
@@ -19,6 +19,5 @@ include = [
 arima = "0.3.0"
 plotters = "0.3.7"
 rand = "0.9.2"
-rustfft = "6.4.0"
 
 

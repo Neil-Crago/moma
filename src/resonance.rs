@@ -1,61 +1,76 @@
-use rustfft::{FftPlanner, num_complex::Complex};
-use arima::acf::acf;
+//! # Resonance Module
+//!
+//! Provides tools to find "resonance" events, where a MOMA signature aligns
+//! with another mathematical property of its prime context.
 
-/// Trait for resonance detection
-pub trait ResonanceDetector {
-    fn detect(&self, data: &[f64]) -> Vec<f64>;
+use crate::core::{MomaRing, OriginStrategy};
+use crate::primes;
+use std::marker::PhantomData;
+
+/// A function pointer type that defines a property of a prime number.
+/// This is used as the target for resonance checks.
+pub type PrimePropertyFn = fn(u64) -> u64;
+
+/// An analyzer that finds primes where the MOMA signature "resonates" with
+/// another property of the prime.
+///
+/// Resonance occurs when `ring.signature(p) % property_fn(p) == 0`.
+pub struct ResonanceFinder<S: OriginStrategy> {
+    ring: MomaRing<S>,
+    property_fn: PrimePropertyFn,
+    _strategy: PhantomData<S>,
 }
 
-/// FFT-based detector
-pub struct FFTResonance;
-
-impl ResonanceDetector for FFTResonance {
-    fn detect(&self, data: &[f64]) -> Vec<f64> {
-        let mut planner = FftPlanner::<f64>::new();
-        let fft = planner.plan_fft_forward(data.len());
-
-        let mut buffer: Vec<Complex<f64>> = data.iter()
-            .map(|&x| Complex { re: x, im: 0.0 })
-            .collect();
-
-        fft.process(&mut buffer);
-        buffer.iter().map(|c| c.norm()).collect()
+impl<S: OriginStrategy> ResonanceFinder<S> {
+    /// Creates a new `ResonanceFinder`.
+    ///
+    /// # Arguments
+    /// * `modulus` - The modulus for the internal `MomaRing`.
+    /// * `strategy` - The `OriginStrategy` to use for generating signatures.
+    /// * `property_fn` - A function that defines the property to check for resonance against.
+    ///   For example, `primes::prime_factor_mass` could be used.
+    pub fn new(modulus: u64, strategy: S, property_fn: PrimePropertyFn) -> Self {
+        Self {
+            ring: MomaRing::new(modulus, strategy),
+            property_fn,
+            _strategy: PhantomData,
+        }
     }
 
-}
+    /// Checks a single prime for a resonance event.
+    ///
+    /// # Returns
+    /// `Some(signature)` if resonance occurs, otherwise `None`.
+    pub fn check_prime(&self, p: u64) -> Option<u64> {
+        let signature = self.ring.signature(p);
+        let property_value = (self.property_fn)(p);
 
-/// Autocorrelation-based detector
-pub struct AutoCorrelationResonance {
-    pub max_lag: usize,
-}
-
-impl ResonanceDetector for AutoCorrelationResonance {
-    fn detect(&self, data: &[f64]) -> Vec<f64> {
-        // Pass Some(self.max_lag) as the second argument, and use unwrap() to get Vec<f64>
-        acf(data, Some(self.max_lag), false).unwrap()
+        // Avoid division by zero and check for resonance.
+        if property_value > 0 && signature % property_value == 0 {
+            Some(signature)
+        } else {
+            None
+        }
     }
-}
 
-pub fn score_resonance_strength(spectrum: &[f64]) -> f64 {
-    let max = spectrum.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
-    let mean = spectrum.iter().sum::<f64>() / spectrum.len() as f64;
-    max / mean // signal-to-noise ratio
-}
+    /// Finds all primes within a given range that exhibit resonance.
+    ///
+    /// # Arguments
+    /// * `start_range` - The beginning of the range to search for primes.
+    /// * `end_range` - The end of the range to search.
+    ///
+    /// # Returns
+    /// A `Vec` of tuples `(prime, signature)` for each resonance event found.
+    pub fn find_in_range(&self, start_range: u64, end_range: u64) -> Vec<(u64, u64)> {
+        let mut p = primes::next_prime(start_range.saturating_sub(1));
+        let mut resonances = Vec::new();
 
-
-pub fn detect_modular_resonance(data: &[f64], max_lag: usize) -> Vec<f64> {
-    acf(data, Some(max_lag), false).unwrap()
-}
-
-pub fn detect_fft_resonance(data: &[f64]) -> Vec<f64> {
-    let mut planner = FftPlanner::<f64>::new();
-    let fft = planner.plan_fft_forward(data.len());
-
-    let mut buffer: Vec<Complex<f64>> = data.iter()
-        .map(|&x| Complex { re: x, im: 0.0 })
-        .collect();
-
-    fft.process(&mut buffer);
-
-    buffer.iter().map(|c| c.norm()).collect()
+        while p < end_range {
+            if let Some(signature) = self.check_prime(p) {
+                resonances.push((p, signature));
+            }
+            p = primes::next_prime(p);
+        }
+        resonances
+    }
 }

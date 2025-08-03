@@ -1,26 +1,21 @@
-## Bioinformatics example
+# Example: MOMA for Bioinformatics
 
-### Bioinformatics: Genetic Modularity
-- Concept: Model codon sequences or gene expression patterns using modular residue behavior.
-- MOMA Angle: Use dynamic origins to simulate mutation drift or modular symmetry in DNA triplets.
+This example demonstrates a creative application of the MOMA framework to bioinformatics. It explores the idea of mapping abstract mathematical patterns derived from prime numbers to concrete biological events, such as genetic mutations, within a simulated chaotic environment.
 
-### Goal
-Model codon sequences (triplets of nucleotides) as modular residues and explore how origin drift and entropy pulses can simulate mutation patterns, evolutionary divergence, or species-specific codon bias.
+## Concepts Demonstrated
 
+* **Interdisciplinary Application**: Bridging number theory (MOMA) and bioinformatics.
+* **Event Simulation**: Using a numeric MOMA signature to determine the location of a simulated point mutation in a DNA sequence.
+* **Mutation Analysis**: Classifying the effect of each mutation (Silent, Missense, or Nonsense) based on the standard genetic code.
+* **Entropy Pulses**: Tracking the Shannon entropy of recent signatures to model environmental chaos. A spike in entropy is treated as a "chaotic event" or "entropy pulse," simulating a stressor that might increase mutation rates.
+* **Data Visualization**: Using the `plotters` crate to create a heatmap of the generated signatures, providing a unique look at the structure of the chosen MOMA strategy.
 
-### Core Concepts
+## How to Run
 
-| Biological Concept       | MOMA Analog                        |
-|--------------------------|------------------------------------|
-| Codon (e.g. "ATG")       | Modular triplet (base-4 or base-64)|
-| Mutation drift           | Origin drift / barycentric motion  |
-| Codon bias               | Composite mass / entropy scoring   |
-| Genetic entropy          | Entropy pulses / modular inertia   |
-| Sequence alignment       | Phase alignment / resonance        |
+First, ensure you have the `plotters` dependency in your main `Cargo.toml`:
 
-
-### Codon Encoding
-- Maps each codon to a numeric value:
-  - Base-4: A=0, C=1, G=2, T=3 → "ATG" = (0,3,2)
-  - Or base-64 if we want to treat triplets as single units
-
+```toml
+[dependencies]
+plotters = "0.3.5"
+```
+When you run the simulation it will print out each structure-forming event and any subsequent chaotic eras that are triggered, and will provide a final summary report.

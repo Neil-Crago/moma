@@ -9,8 +9,8 @@
 //! their final "drift magnitude" scores.
 
 use moma::origin_drift::OriginDrift;
-use moma::primes::primes;
-use moma::strategy::strategy;
+use moma::primes;
+use moma::strategy;
 
 fn main() {
     println!("\n--- OriginDrift Analysis: Comparing Strategy Volatility ---\n");
