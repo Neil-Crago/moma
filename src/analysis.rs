@@ -1,7 +1,6 @@
 
 /// Tools for number-theoretic analysis related to MOMA.
-pub mod analysis {
-    use crate::primes::primes;
+    use crate::primes;
 
     /// A tool to analyze the "dampening" of composite numbers within a range.
 ///
@@ -75,4 +74,3 @@ impl CompositeDampener {
         }
     }
     
-}

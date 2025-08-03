@@ -4,17 +4,18 @@ use crate::utils::write_csv;
 
 
 #[derive(Debug, Clone)]
-pub struct EntropyPulse {
+pub struct CosmoEntropyPulse {
     pub amplitude: f64,
     pub frequency: f64,
     pub phase: f64,
 }
 
-impl EntropyPulse {
+impl CosmoEntropyPulse {
     pub fn value_at(&self, time: f64) -> f64 {
         self.amplitude * (self.frequency * time + self.phase).sin()
     }
 }
+
 
 #[derive(Debug, Clone)]
 pub struct Planet {
@@ -22,7 +23,7 @@ pub struct Planet {
     pub mass: f64,
     pub orbital_radius: f64,
     pub phase: f64,
-    pub entropy: Option<EntropyPulse>, // Optional entropy modulation
+    pub entropy: Option<CosmoEntropyPulse>, // Optional entropy modulation
 }
 
 

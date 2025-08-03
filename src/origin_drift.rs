@@ -1,4 +1,4 @@
-use crate::core::core::{MomaRing, OriginStrategy};
+use crate::core::{MomaRing, OriginStrategy};
 use std::marker::PhantomData;
 
 /// A tool to measure the "drift" or volatility of MOMA signatures over a sequence of primes.

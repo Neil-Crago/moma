@@ -1,6 +1,5 @@
 /// Core MOMA structures and traits.
-pub mod core {
-use crate::primes::primes;
+use crate::primes;
 
     /// Defines a strategy for calculating the moving origin for a given prime context.
     ///
@@ -65,5 +64,4 @@ use crate::primes::primes;
             self.residue(input, p)
         }
     }
-}
 

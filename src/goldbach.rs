@@ -1,6 +1,6 @@
 //! Provides tools for exploring Goldbach's conjecture.
 
-use crate::primes::primes;
+use crate::primes;
 use std::collections::HashSet;
 
 /// A tool to efficiently find Goldbach pairs for even numbers.

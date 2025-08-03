@@ -2,9 +2,8 @@
 ///
 /// NOTE: For a high-performance production crate, consider replacing these
 /// with a dependency on a specialized library like `primal`.
-pub mod primes {
 
-    /// A basic primality test.
+/// A basic primality test.
     pub fn is_prime(n: u64) -> bool {
         if n < 2 { return false; }
         if n == 2 || n == 3 { return true; }
@@ -65,4 +64,3 @@ pub mod primes {
         }
         count
     }
-}

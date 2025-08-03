@@ -5,7 +5,7 @@
 [](https://opensource.org/licenses/MIT)
 [](https://www.google.com/search?q=https://github.com/neil-crago/moma/actions)
 
-**MOMA** is a Rust framework for exploring complex systems including cosmology, number theory, algorithmic data analysis and cryptography through the lens of **Moving Origin Modular Arithmetic**.
+**MOMA** is a Rust framework for exploring complex systems including cosmology, number theory, algorithmic data analysis, bioinformatics and cryptography through the lens of **Moving Origin Modular Arithmetic**.
 
 It should interest anyone who is interested in a novel, relational framework for analyzing the properties of complex systems.
 
@@ -55,7 +55,7 @@ Add MOMA to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-moma = "0.2.2" # Replace with the latest version
+moma = "0.2.3" # Replace with the latest version
 ```
 
 -----
@@ -65,9 +65,9 @@ moma = "0.2.2" # Replace with the latest version
 The easiest way to get started is to create a `MomaRing` and calculate the "signature" of a prime.
 
 ```rust
-use moma::core::core::MomaRing;
-use moma::primes::primes;
-use moma::strategy::strategy;
+use moma::core::MomaRing;
+use moma::primes;
+use moma::strategy;
 
 // 1. Create a MOMA ring with modulus 37 and the PrimeGap strategy.
 let ring = MomaRing::new(37, strategy::PrimeGap);
@@ -115,8 +115,8 @@ Use `OriginDrift` to compare the stability of different `OriginStrategy` impleme
 
 ```rust
 use moma::origin_drift::OriginDrift;
-use moma::strategy::strategy;
-use moma::primes::primes;
+use moma::strategy;
+use moma::primes;
 
 // Create a drift analyzer for the PrimeGap strategy.
 let mut drift_analyzer = OriginDrift::new(100, strategy::PrimeGap);
@@ -134,6 +134,17 @@ println!(
     drift_analyzer.drift_magnitude()
 );
 ```
+### Other examples:
+
+In the examples folder are demo versions of various applications of the MOMA Framework, these include:
+
+* **bioinformatics**
+* **cosmology**
+* **A goldbach projector**
+* **A key derivation function (KDF)**
+* **A Mass Field demonstrator** 
+* **An Origin drift demo**
+* **A Prime Gaps demo**
 
 -----
 

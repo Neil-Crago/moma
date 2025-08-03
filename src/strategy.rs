@@ -1,7 +1,6 @@
 /// Implementations of various origin strategies.
-pub mod strategy {
-    use crate::core::core::OriginStrategy;
-    use crate::primes::primes;
+    use crate::core::OriginStrategy;
+    use crate::primes;
 
     /// An origin strategy where the origin is fixed to a constant value.
     #[derive(Debug, Clone, Copy)]
@@ -37,4 +36,3 @@ pub mod strategy {
                 .sum()
         }
     }
-}

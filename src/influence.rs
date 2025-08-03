@@ -1,6 +1,6 @@
 //! Provides tools for modeling the "influence" of composite numbers.
 
-use crate::primes::primes;
+use crate::primes;
 use std::collections::HashMap;
 
 /// A tool to model the gravitational-like "influence" of composite numbers.

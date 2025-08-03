@@ -18,8 +18,8 @@
 //! ## Example Usage
 //!
 //! ```
-//! use moma::core::core::{MomaRing};
-//! use mom::strategy::strategy; 
+//! use moma::core::{MomaRing};
+//! use moma::strategy; 
 //! 
 //!
 //! // Create a MOMA ring with modulus 37.
@@ -59,16 +59,25 @@ pub mod barycentric;
 pub mod resonance;
 pub mod score;
 pub mod composite;
+pub mod biosig;
+pub mod codon;
+pub mod mutation;
+
 
 // --- Public API Re-exports ---
 // This makes the most important structs directly accessible to users.
-pub use crate::core::core::{MomaRing, OriginStrategy};
+pub use crate::core::{MomaRing, OriginStrategy};
 pub use crate::massfield::MassField;
 pub use crate::origin_drift::OriginDrift;
-pub use crate::primes::primes::{is_prime, next_prime, prev_prime};
-pub use crate::strategy::strategy::PrimeGap;
-pub use crate::cosmo::{BarycenterSimulator, EntropyPulse, Planet};
+pub use crate::primes::{is_prime, next_prime, prev_prime};
+pub use crate::strategy::PrimeGap;
+pub use crate::cosmo::{BarycenterSimulator, CosmoEntropyPulse, Planet};
 pub use crate::barycentric::OriginShift;
 pub use crate::resonance::{AutoCorrelationResonance, FFTResonance, ResonanceDetector, score_resonance_strength, detect_fft_resonance, detect_modular_resonance};
 pub use crate::score::{score_kurtosis, score_signal_to_noise};
 pub use crate::composite::{CompositeDampener, MassDampener};
+pub use crate::biosig::BioSignature;
+pub use crate::codon::{CodonRing, PulseMode, EntropyPulse};
+pub use crate::mutation::{MutationTimeline, MutationSnapshot};
+pub use crate::utils::{write_csv, plot_mutation_timeline, plot_entropy_heatmap};
+

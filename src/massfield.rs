@@ -1,4 +1,4 @@
-use crate::primes::primes;
+use crate::primes;
 
 /// A tool to analyze the "mass" of composite numbers between consecutive primes.
 ///
