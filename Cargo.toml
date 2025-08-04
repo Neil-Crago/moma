@@ -4,15 +4,14 @@ version = "0.2.8"
 edition = "2024"
 authors = ["Neil Crago"]
 description = "Moving Origin Modular Arithmetic (MOMA), a library for modeling complex systems"
-license = "MIT OR Apache-2.0"
+license = "MIT"
 repository = "https://github.com/neil-crago/moma"
-keywords = ["modulo", "Mathematics", "complex-systems", "number-theory", "bioinformatics"]
+keywords = ["modulo", "math", "simulation", "analysis", "modeling"]
 include = [
     "src/*.rs",
     "Cargo.toml",
     "README.md",
     "LICENSE-MIT",
-    "LICENSE-APACHE",
 ]
 
 [dependencies]
