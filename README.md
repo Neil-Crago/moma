@@ -3,7 +3,9 @@
 [![Crates.io](https://img.shields.io/crates/v/moma.svg?style=flat-square)](https://crates.io/crates/moma)
 [![Docs.rs](https://img.shields.io/docsrs/moma?style=flat-square)](https://docs.rs/moma)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue?style=flat-square)](https://opensource.org/licenses/MIT)
-[![CI](https://github.com/neil-crago/moma/actions/workflows/ci.yml/badge.svg)](https://github.com/neil-crago/moma/actions)
+[![CI](https://github.com/neil-crago/moma/actions/workflows/rust.yml/badge.svg)](https://github.com/neil-crago/moma/actions/workflows/rust.yml)
+
+
 
 **MOMA** is a Rust framework for exploring number theory, cryptography, and bioinformatics through the lens of **Moving Origin Modular Arithmetic**.
 
@@ -49,9 +51,10 @@ Add MOMA to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-moma = "0.1.9" # Replace with the latest version
+moma = "0.2.8" # Replace with the latest version
 ````
 
+or rather just run `cargo add moma` from the terminal
 -----
 
 ## Exploring MOMA
@@ -101,6 +104,18 @@ if let Some((signature, mutation)) = analyzer.analyze(13, dna_sequence) {
     println!("Resulting mutation type: {:?}", mutation.mutation_type);
 }
 ```
+
+## More Examples
+
+There are more examples in the GitHub repository including:-
+
+* **Cosmology** - For the Astrophysicists
+* **BioInformatics** - For Biologists
+* **Prime Gaps** - For the number theorists
+* **Goldbach Projector** - For Goldbach Conjecture theorists
+* **Origin Drift** - to understand MOMA's drifting Origin 
+* **Key Derivation Function (KDF)** - For Cryptographers
+* **Mass Field** - How to create a massfield for a specific range
 
 -----
 

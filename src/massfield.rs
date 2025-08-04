@@ -27,8 +27,6 @@ impl MassField {
     /// - For each `p`, it calculates the total composite mass in the interval `(p, p_next)`.
     /// - Returns a `Vec` of tuples, where each tuple contains the starting prime
     ///   and the calculated mass of the subsequent gap.
-    ///
-    
     pub fn generate_mass_map(&self) -> Vec<(u64, u64)> {
         let mut map = Vec::new();
         // Start with the first prime at or after the range_start.

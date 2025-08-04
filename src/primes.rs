@@ -1,8 +1,8 @@
 /// Utility functions for prime number operations.
 ///
 /// NOTE: For a high-performance production crate, consider replacing these
-/// with a dependency on a specialized library like `primal`.
-
+/// with a dependency on a specialized library like `primal`
+/// 
 /// A basic primality test.
     pub fn is_prime(n: u64) -> bool {
         if n < 2 { return false; }
