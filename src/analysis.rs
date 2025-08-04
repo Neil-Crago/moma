@@ -46,7 +46,9 @@ impl CompositeDampener {
     }
 }
 
-    /// A tool to analyze the "mass" of composite numbers between consecutive primes.
+/*
+
+/// A tool to analyze the "mass" of composite numbers between consecutive primes.
     pub struct MassField {
         pub range_start: u64,
         pub range_end: u64,
@@ -73,4 +75,4 @@ impl CompositeDampener {
             map
         }
     }
-    
+*/
