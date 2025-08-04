@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io::{Write, BufWriter};
-use plotters::prelude::*;
+//use plotters::prelude::*;
 use crate::mutation::MutationTimeline;
 
 pub fn write_csv(path: &str, data: &[f64]) -> std::io::Result<()> {
@@ -14,6 +14,7 @@ pub fn write_csv(path: &str, data: &[f64]) -> std::io::Result<()> {
     Ok(())
 }
 
+/* 
 pub fn plot_mutation_timeline(timeline: &MutationTimeline, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
     let root = BitMapBackend::new(filename, (1280, 720)).into_drawing_area();
     root.fill(&WHITE)?;
@@ -86,3 +87,4 @@ pub fn plot_entropy_heatmap(timeline: &MutationTimeline, filename: &str) -> Resu
     Ok(())
 }
 
+*/
