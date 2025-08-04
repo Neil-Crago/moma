@@ -1,6 +1,6 @@
 [package]
 name = "moma"
-version = "0.2.6"
+version = "0.2.7"
 edition = "2024"
 authors = ["Neil Crago"]
 description = "Moving Origin Modular Arithmetic (MOMA), a library for modeling complex systems"
