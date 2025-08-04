@@ -46,33 +46,3 @@ impl CompositeDampener {
     }
 }
 
-/*
-
-/// A tool to analyze the "mass" of composite numbers between consecutive primes.
-    pub struct MassField {
-        pub range_start: u64,
-        pub range_end: u64,
-    }
-
-    impl MassField {
-        /// Generates a map of `(prime, composite_mass_in_next_gap)`.
-        ///
-        /// The "mass" is the sum of the count of prime factors for each composite
-        /// number between a prime `p` and its successor `p_next`.
-        pub fn generate_mass_map(&self) -> Vec<(u64, u64)> {
-            let mut map = Vec::new();
-            let mut p = primes::next_prime(self.range_start.saturating_sub(1));
-
-            while p < self.range_end {
-                let p_next = primes::next_prime(p);
-                let mass = (p + 1..p_next)
-                    .filter(|&n| !primes::is_prime(n))
-                    .map(primes::prime_factor_mass)
-                    .sum();
-                map.push((p, mass));
-                p = p_next;
-            }
-            map
-        }
-    }
-*/

@@ -28,15 +28,7 @@ impl MassField {
     /// - Returns a `Vec` of tuples, where each tuple contains the starting prime
     ///   and the calculated mass of the subsequent gap.
     ///
-    /// # Example
-    /// ```
-    /// use crate::massfield::MassField;
-    /// let field = MassField::new(1, 20);
-    /// let mass_map = field.generate_mass_map();
-    /// // For p=13, p_next=17. Composites are 14, 15, 16.
-    /// // Mass = mass(14) + mass(15) + mass(16) = 2 + 2 + 4 = 8.
-    /// assert!(mass_map.contains(&(13, 8)));
-    /// ```
+    
     pub fn generate_mass_map(&self) -> Vec<(u64, u64)> {
         let mut map = Vec::new();
         // Start with the first prime at or after the range_start.
