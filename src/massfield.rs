@@ -30,7 +30,7 @@ impl MassField {
     ///
     /// # Example
     /// ```
-    /// // use moma::massfield::MassField; // Assuming moma is your crate name
+    /// use moma::massfield::MassField; 
     /// let field = MassField::new(1, 20);
     /// let mass_map = field.generate_mass_map();
     /// // For p=13, p_next=17. Composites are 14, 15, 16.
