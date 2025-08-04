@@ -50,7 +50,7 @@ Add MOMA to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-moma = "0.2.8" # Replace with the latest version
+moma = "0.3.0" # Replace with the latest version
 ````
 
 or rather just run `cargo add moma` from the terminal
