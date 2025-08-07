@@ -1,4 +1,4 @@
-/// Utility functions for prime number operations.
+//! Utility functions for prime number operations.
 ///
 /// NOTE: For a high-performance production crate, consider replacing these
 /// with a dependency on a specialized library like `primal`

@@ -1,4 +1,4 @@
-/// Scores resonance strength from a spectrum or autocorrelation series
+//! Scores resonance strength from a spectrum or autocorrelation series
 pub fn score_signal_to_noise(data: &[f64]) -> f64 {
     if data.is_empty() { return 0.0; }
     let max = data.iter().cloned().fold(f64::NEG_INFINITY, f64::max);

@@ -50,7 +50,7 @@ Add MOMA to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-moma = "0.3.0" # Replace with the latest version
+moma = "0.3.1" # Replace with the latest version
 ````
 
 or rather just run `cargo add moma` from the terminal
@@ -129,4 +129,4 @@ This project is licensed under either of:
   * Apache License, Version 2.0, ([LICENSE-APACHE](https://www.google.com/search?q=LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
   * MIT license ([LICENSE-MIT](https://www.google.com/search?q=LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
-at your option.
+at your option. 

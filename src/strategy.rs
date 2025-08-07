@@ -1,4 +1,5 @@
-/// Implementations of various origin strategies.
+//! Implementations of various origin strategies.
+   
     use crate::core::OriginStrategy;
     use crate::primes;
 

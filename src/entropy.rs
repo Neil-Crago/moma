@@ -62,3 +62,47 @@ impl<T: Eq + Hash> Entropy<T> {
             .sum()
     }
 }
+
+
+pub fn calculate_path_entropy(sequence_of_angles: Vec<f64>) -> f64 {
+    if sequence_of_angles.is_empty() {
+        return 0.0;
+    }
+
+    // Step 1:
+    let mut counts: HashMap<String, i32> = HashMap::new();
+    for angle in sequence_of_angles.iter() {
+        let key = format_float_to_string(*angle);
+        // Use the entry API to either insert a new count of 1, or increment the existing one.
+        *counts.entry(key).or_insert(0) += 1;
+    }
+
+    // Step 2: Calculate the entropy
+    let total_steps = sequence_of_angles.len();
+    let mut entropy = 0.0;
+
+    for count in counts.iter() {
+        let probability = *count.1 as f64 / total_steps as f64;
+        if probability > 0.0 {
+            entropy = entropy - (probability * probability.log2());
+        }
+    }
+    entropy
+}
+
+pub fn format_float_to_string(n: f64) -> String {
+    let n_str = format!("{n:.3}");
+    n_str
+}
+
+/*
+fn main() {
+    println!("\nsequence of angles rounded to 3 decimal places\n");
+    let seq = [23.56789, 31.67, 56.78, 78.1, 90.3678].to_vec();
+    for s in seq.iter() {
+        println!("{:?}", format_float_to_string(*s));
+    }
+
+    println!("\nentropy: {}", calculate_path_entropy(seq));
+}
+*/
