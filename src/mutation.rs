@@ -1,5 +1,3 @@
-//! # Mutation Module
-//!
 //! Provides structures for representing and analyzing genetic mutations.
 
 use crate::codon::AminoAcid;

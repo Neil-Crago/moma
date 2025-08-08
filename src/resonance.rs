@@ -1,5 +1,3 @@
-//! # Resonance Module
-//!
 //! Provides tools to find "resonance" events, where a MOMA signature aligns
 //! with another mathematical property of its prime context.
 

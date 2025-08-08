@@ -1,5 +1,3 @@
-//! # Codon Module
-//!
 //! Provides structures and logic for working with genetic codons and the standard DNA codon table.
 
 use std::collections::HashMap;

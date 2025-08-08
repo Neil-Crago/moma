@@ -1,8 +1,8 @@
+//! Tools for number-theoretic analysis related to MOMA.
 
-/// Tools for number-theoretic analysis related to MOMA.
-    use crate::primes;
+use crate::primes;
 
-    /// A tool to analyze the "dampening" of composite numbers within a range.
+/// A tool to analyze the "dampening" of composite numbers within a range.
 ///
 /// The dampening score measures how many composites in a range [lower, upper]
 /// are divisible by a given set of small primes. A higher score means the

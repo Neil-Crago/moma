@@ -1,9 +1,5 @@
-//! Utilities for writing data to CSV files and plotting mutation timelines.
- //! This module provides functions to write numerical data to CSV format and
- //! to plot mutation timelines using the Plotters library.
- //! It is designed to work with the MOMA framework, particularly for analyzing
- //! mutation data in bioinformatics applications.
- //! 
+//! Utilities for writing data to CSV files.
+
 use std::fs::File;
 use std::io::{Write, BufWriter};
 //use plotters::prelude::*;

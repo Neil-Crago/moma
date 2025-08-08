@@ -1,8 +1,6 @@
-//! # Biological Signature (BioSig) Module
-//!
 //! Provides a bridge between MOMA's numerical analysis and bioinformatics.
-//! This module defines a "biological signature" by mapping MOMA's numeric
-//! output to the effects of genetic mutations.
+// This module defines a "biological signature" by mapping MOMA's numeric
+// output to the effects of genetic mutations.
 
 use crate::codon::CodonTable;
 use crate::core::{MomaRing, OriginStrategy};

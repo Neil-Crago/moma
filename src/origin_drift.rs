@@ -1,4 +1,4 @@
-//! This module provides the `OriginDrift` struct, which is used to analyze the volatility of MOMA signatures
+//! Provides the `OriginDrift` struct, which is used to analyze the volatility of MOMA signatures
 //! over a sequence of primes. It measures the "drift" or change in signatures
 //! calculated using a specified `OriginStrategy`.
 

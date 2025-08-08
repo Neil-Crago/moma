@@ -1,8 +1,4 @@
-//! This module provides the `MassField` struct, which is used to analyze the "mass" of composite numbers
-//! in the gaps between consecutive primes within a specified range.
-//! The "mass" is defined as the sum of the counts of prime factors for each composite
-//! number in the gap.
-
+//! A tool used to analyze the "mass" of composite numbers in the gaps between consecutive primes within a specified range.
 
 use crate::primes;
 

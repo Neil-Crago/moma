@@ -1,5 +1,6 @@
-/// Core MOMA structures and traits.
-use crate::primes;
+//! Core MOMA structures and traits.
+
+    use crate::primes;
 
     /// Defines a strategy for calculating the moving origin for a given prime context.
     ///

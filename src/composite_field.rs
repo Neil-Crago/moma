@@ -1,5 +1,3 @@
-//! # Composite Field Module
-//!
 //! Provides a simple utility for identifying composite numbers within a given range.
 
 use crate::primes;
