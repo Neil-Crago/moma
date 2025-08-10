@@ -1,11 +1,12 @@
 [package]
 name = "moma"
-version = "0.3.2"
+version = "0.3.3"
 edition = "2024"
 authors = ["Neil Crago"]
 description = "Moving Origin Modular Arithmetic (MOMA), a library for modeling complex systems"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/neil-crago/moma"
+documentation = "https://docs.rs/moma"
 keywords = ["modulo", "math", "simulation", "analysis", "modeling"]
 include = [
     "src/*.rs",
