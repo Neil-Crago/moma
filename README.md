@@ -116,6 +116,11 @@ There are more examples in the GitHub repository including:-
 * **Key Derivation Function (KDF)** - For Cryptographers
 * **Mass Field** - How to create a massfield for a specific range
 
+
+## Author
+
+Neil Crago — experimental mathematician, Rust architect, and philosophical explorer of mathematical beauty.
+
 -----
 
 ## Contributing
