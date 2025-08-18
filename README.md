@@ -1,3 +1,8 @@
+<p align="left">
+  <img src="docs/moma_trim.png" alt="MOMA Logo"/>
+</p>  
+
+
 # MOMA: Moving Origin Modular Arithmetic
 
 [![Crates.io](https://img.shields.io/crates/v/moma.svg?style=flat-square)](https://crates.io/crates/moma)
