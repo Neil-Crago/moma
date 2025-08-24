@@ -140,3 +140,12 @@ This project is licensed under either of:
   * MIT license ([LICENSE-MIT](https://www.google.com/search?q=LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
 at your option. 
+
+## Related Crates
+This crate is part of a collection of crates by the same author:
+These include:-
+  * MOMA_simulation_engine
+  * Fractal_Algebra
+  * tma_engine
+  * factorial_engine
+  * fa_slow_ai
