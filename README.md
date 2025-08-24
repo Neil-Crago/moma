@@ -55,7 +55,7 @@ Add MOMA to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-moma = "0.3.4" # Replace with the latest version
+moma = "0.3.6" # Replace with the latest version
 ````
 
 or rather just run `cargo add moma` from the terminal
@@ -124,7 +124,7 @@ There are more examples in the GitHub repository including:-
 
 ## Author
 
-Neil Crago — experimental mathematician, Rust architect, and philosophical explorer of mathematical beauty.
+Neil Crago — experimental mathematician
 
 -----
 
