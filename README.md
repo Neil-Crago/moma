@@ -25,7 +25,6 @@ This origin shifts dynamically based on a contextual value—typically a prime n
 
 > The original inspiration came from this NASA article: [What Is a Barycenter?](https://spaceplace.nasa.gov/barycenter/en/)
 
----
 
 ## Core Concepts
 
@@ -37,7 +36,6 @@ The MOMA framework is built on a few simple but powerful concepts:
     * **Number Theory**: `MassField`, `OriginDrift`, `CompositeInfluence`, `CompositeDampener`, `GoldbachProjector`, `Entropy`, and `ResonanceFinder`.
     * **Bioinformatics**: `BioSigAnalyzer`, `CodonTable`, and `Mutation` for mapping numeric signatures to biological events.
 
----
 
 ## Features
 
@@ -59,7 +57,7 @@ moma = "0.3.6" # Replace with the latest version
 ````
 
 or rather just run `cargo add moma` from the terminal
------
+
 
 ## Exploring MOMA
 
@@ -121,12 +119,10 @@ There are more examples in the GitHub repository including:-
 * **Key Derivation Function (KDF)** - For Cryptographers
 * **Mass Field** - How to create a massfield for a specific range
 
-
 ## Author
 
 Neil Crago — experimental mathematician
 
------
 
 ## Contributing
 
@@ -139,9 +135,10 @@ This project is licensed under either of:
   * Apache License, Version 2.0, ([LICENSE-APACHE](https://www.google.com/search?q=LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
   * MIT license ([LICENSE-MIT](https://www.google.com/search?q=LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
-at your option. 
+at your option
 
 ## Related Crates
+
 This crate is part of a collection of crates by the same author:
 These include:-
   * MOMA_simulation_engine
@@ -149,3 +146,5 @@ These include:-
   * tma_engine
   * factorial_engine
   * fa_slow_ai
+  * coheron
+  * curvature
