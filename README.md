@@ -1,9 +1,6 @@
-<p align="left">
-  <img src="docs/moma_trim.png" alt="MOMA Logo"/>
-</p>  
-
-
 # MOMA: Moving Origin Modular Arithmetic
+
+![MOMA Logo](docs/moma_trim.png)
 
 [![Crates.io](https://img.shields.io/crates/v/moma.svg?style=flat-square)](https://crates.io/crates/moma)
 [![Docs.rs](https://img.shields.io/docsrs/moma?style=flat-square)](https://docs.rs/moma)
@@ -57,7 +54,6 @@ moma = "0.3.6" # Replace with the latest version
 ````
 
 or rather just run `cargo add moma` from the terminal
-
 
 ## Exploring MOMA
 
@@ -132,8 +128,9 @@ Contributions are welcome\! If you have an idea for a new `OriginStrategy`, an a
 
 This project is licensed under either of:
 
-  * Apache License, Version 2.0, ([LICENSE-APACHE](https://www.google.com/search?q=LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-  * MIT license ([LICENSE-MIT](https://www.google.com/search?q=LICENSE-MIT) or http://opensource.org/licenses/MIT)
+* Apache License, Version 2.0, ([LICENSE-APACHE](https://www.google.com/search?q=LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+
+* MIT license ([LICENSE-MIT](https://www.google.com/search?q=LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
 at your option
 
@@ -141,10 +138,11 @@ at your option
 
 This crate is part of a collection of crates by the same author:
 These include:-
-  * MOMA_simulation_engine
-  * Fractal_Algebra
-  * tma_engine
-  * factorial_engine
-  * fa_slow_ai
-  * coheron
-  * curvature
+
+* MOMA_simulation_engine
+* Fractal_Algebra
+* tma_engine
+* factorial_engine
+* fa_slow_ai
+* coheron
+* curvature
