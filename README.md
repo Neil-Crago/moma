@@ -7,10 +7,9 @@
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue?style=flat-square)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/neil-crago/moma/actions/workflows/rust.yml/badge.svg)](https://github.com/neil-crago/moma/actions/workflows/rust.yml)
 
-
 **MOMA** is a Rust framework for exploring number theory, cryptography, and bioinformatics through the lens of **Moving Origin Modular Arithmetic**.
 
-The crate is designed for researchers and developers who are interested in a novel, relational framework for analyzing  complex sequences.
+The crate is designed for researchers and developers interested in a novel, relational framework for analyzing complex sequences.
 
 ---
 
@@ -22,17 +21,15 @@ This origin shifts dynamically based on a contextual value—typically a prime n
 
 > The original inspiration came from this NASA article: [What Is a Barycenter?](https://spaceplace.nasa.gov/barycenter/en/)
 
-
 ## Core Concepts
 
-The MOMA framework is built on a few simple but powerful concepts:
+The MOMA framework is built on a few simple but powerful ideas:
 
-* **`MomaRing`**: The primary object for all calculations. A ring is defined by a `modulus` and a chosen `OriginStrategy`.
-* **`OriginStrategy`**: A trait that defines *how* the origin moves, making the framework highly extensible.
-* **Analysis Tools**: A suite of modular tools for deeper analysis:
-    * **Number Theory**: `MassField`, `OriginDrift`, `CompositeInfluence`, `CompositeDampener`, `GoldbachProjector`, `Entropy`, and `ResonanceFinder`.
-    * **Bioinformatics**: `BioSigAnalyzer`, `CodonTable`, and `Mutation` for mapping numeric signatures to biological events.
-
+* **`MomaRing`**: the primary object for calculations. A ring is defined by a `modulus` and a chosen `OriginStrategy`.
+* **`OriginStrategy`**: a trait that defines how the origin moves, making the framework highly extensible.
+* **Analysis tools**: a suite of modular tools for deeper analysis.
+  * **Number theory**: `MassField`, `OriginDrift`, `CompositeInfluence`, `CompositeDampener`, `GoldbachProjector`, `Entropy`, and `ResonanceFinder`.
+  * **Bioinformatics**: `BioSigAnalyzer`, `CodonTable`, and `Mutation` for mapping numeric signatures to biological events.
 
 ## Features
 
@@ -50,10 +47,14 @@ Add MOMA to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-moma = "0.3.6" # Replace with the latest version
-````
+moma = "0.4"
+```
 
-or rather just run `cargo add moma` from the terminal
+or simply run:
+
+```bash
+cargo add moma
+```
 
 ## Exploring MOMA
 
@@ -69,7 +70,7 @@ use moma::strategy;
 use moma::primes;
 
 // Find primes where the signature (using CompositeMass strategy)
-// is divisible by the prime's factor mass.
+// is divisible by the prime factor mass.
 let finder = ResonanceFinder::new(
     100,
     strategy::CompositeMass,
@@ -105,34 +106,32 @@ if let Some((signature, mutation)) = analyzer.analyze(13, dna_sequence) {
 
 ## More Examples
 
-There are more examples in the GitHub repository including:-
+There are more examples in the GitHub repository, including:
 
-* **Cosmology** - For the Astrophysicists
-* **BioInformatics** - For Biologists
-* **Prime Gaps** - For the number theorists
-* **Goldbach Projector** - For Goldbach Conjecture theorists
-* **Origin Drift** - to understand MOMA's drifting Origin 
-* **Key Derivation Function (KDF)** - For Cryptographers
-* **Mass Field** - How to create a massfield for a specific range
+* **Cosmology** - for astrophysics-oriented exploration
+* **Bioinformatics** - for biological and sequence-based models
+* **Prime Gaps** - for number-theory-focused experiments
+* **Goldbach Projector** - for Goldbach conjecture investigations
+* **Origin Drift** - to understand how a MOMA origin drifts over time
+* **Key Derivation Function (KDF)** - for cryptographic-style experimentation
+* **Mass Field** - for building a mass field across a chosen range
 
 ## Author
 
-Neil Crago — experimental mathematician
-
+Neil Crago
 
 ## Contributing
 
-Contributions are welcome\! If you have an idea for a new `OriginStrategy`, an analysis tool, or find a bug, please feel free to open an issue or submit a pull request.
+Contributions are welcome. If you have an idea for a new `OriginStrategy`, an analysis tool, or find a bug, please feel free to open an issue or submit a pull request.
 
 ## License
 
 This project is licensed under either of:
 
-* Apache License, Version 2.0, ([LICENSE-APACHE](https://www.google.com/search?q=LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+* Apache License, Version 2.0 ([LICENSE-APACHE](https://www.apache.org/licenses/LICENSE-2.0))
+* MIT license ([LICENSE-MIT](https://opensource.org/licenses/MIT))
 
-* MIT license ([LICENSE-MIT](https://www.google.com/search?q=LICENSE-MIT) or http://opensource.org/licenses/MIT)
-
-at your option
+at your option.
 
 ## Related Crates
 
