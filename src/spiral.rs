@@ -658,7 +658,7 @@ pub(crate) fn parse_rows(text: &str, cols: usize) -> Result<Vec<Vec<f64>>, Strin
     Ok(rows)
 }
 
-/// Parses `x,y` rows (see [`parse_rows`] rules) into 2D points.
+/// Parses `x,y` rows (header, `#` comments and extra columns tolerated) into 2D points.
 pub fn parse_xy(text: &str) -> Result<Vec<(f64, f64)>, String> {
     Ok(parse_rows(text, 2)?.into_iter().map(|r| (r[0], r[1])).collect())
 }

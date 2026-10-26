@@ -9,7 +9,7 @@
 
 **MOMA** is a Rust toolkit for analysing things relative to an origin that *moves*. Its main use is **spirals and helices around a wandering axis**: the kind of path you get from a flagellum, a tendril, a vortex track or a coiled filament. Seen in fixed coordinates these look irregular; relative to a moving axis they are a steady rotation you can measure.
 
-The crate also keeps its original ring-based tools (modular arithmetic with a movable origin, prime-based signatures, a little bioinformatics), described under [Legacy and experimental](#legacy-and-experimental).
+The crate's name is historical: it began as modular arithmetic with a movable origin. That part, with the prime-based and bioinformatics modules, was removed in 1.0 (see the [CHANGELOG](CHANGELOG.md)); the ring survives as the place phase is quantised to, and as the setting for circular consensus.
 
 > **Real-data validation:** see [Results on real data](#results-on-real-data) for the human sperm flagellum, flagellin PDB and pea-shoot checks, including what failed.
 
@@ -28,16 +28,17 @@ Just as the Earth and Moon orbit a common center of mass that is not the center 
 ## Core Concepts
 
 * **`spiral` / `helix`**: moving-axis analysis in 2D and 3D.
-* **`consensus`**: weighted barycentres, using a circular mean on `Z_m` (so 1 and 9 on `Z_10` average to 0, not 5).
-* **`MomaRing` and `OriginStrategy`**: the underlying ring with a pluggable origin.
+* **`consensus`**: one answer from several competing positions or axis estimates: circular means on `Z_m` (so 1 and 9 on `Z_10` average to 0, not 5), robust geometric-median barycentres, and a path-level consensus that outvotes a failing estimator.
 
 ## Features
 
-* **Axis estimation**: fixed window, adaptive window, and a joint axis-and-rotation fit that reports its own residual.
+* **Axis estimation**: fixed window, adaptive window, period-matched window, midrange and coverage axes, and a joint axis-and-rotation fit that reports its own residual.
+* **Period finding**: dominant and longest-significant periods, and one period pooled across simultaneous tracks.
 * **Dirty-data handling**: gap filling, outlier rejection and a median axis, with one-call repair for 3D tracks.
 * **Ring signatures**: winding number, quantised phase, and a backward-step (slip) count.
+* **Consensus**: circular mean with concentration, geometric median, and `consensus_axis` with per-estimator weights and per-sample spread.
 * **Your own data**: `parse_xy` and `parse_xyz` read CSV-like text.
-* **Pure Rust**, no heavy dependencies.
+* **Pure Rust**, no dependencies.
 
 ---
 
@@ -47,7 +48,7 @@ Add MOMA to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-moma = "0.5"
+moma = "1.0"
 ```
 
 or simply run:
@@ -125,31 +126,28 @@ A bacterial track set was unusable, and the flagellin sequence tables (Nature Co
 
 ### Barycentric consensus
 
-`moma::consensus` computes weighted barycentres on the ring and in the plane (as an `OriginShift`).
+`moma::consensus` merges several answers into one.
 
-## Legacy and experimental
+- **Ring:** `circular_mean` and `ring_consensus` return the weighted circular mean with a *concentration* (0 to 1) saying how strongly the votes agree; `ring_barycentre` returns just the residue.
+- **Space:** `weighted_barycentre` is the mean; `geometric_median` is the robust version, barely moved by a minority of wild points. `plane_barycentre` gives an `OriginShift`.
+- **Paths:** `consensus_axis` (and `consensus_axis_2d`) merges several estimates of one moving axis. Each sample is the geometric median of the estimates, and each estimator is weighted by its prior divided by its rms distance to the consensus, so an estimator that is wrong throughout is outvoted rather than averaged in. It returns the weights (which estimators were trusted) and a per-sample spread (where the axis is poorly determined).
 
-The crate's original modules remain, but are more speculative and are not the focus: prime-based origin strategies (`PrimeGap`, `CompositeMass`), `ResonanceFinder`, `MassField`, `OriginDrift`, `GoldbachProjector`, and the bioinformatics helpers `BioSigAnalyzer`, `CodonTable` and `Mutation`.
+`examples/consensus_bench.rs` runs six axis estimators on the synthetic elliptical benchmark (known axis) and merges them. Axis rms error:
 
-```rust
-use moma::resonance::ResonanceFinder;
-use moma::strategy;
-use moma::primes;
+| Case | Best single | Median single | Plain mean of all | Consensus |
+|---|---|---|---|---|
+| steady | 0.047 | 0.17 to 0.21 | 0.66 | **0.047** |
+| irregular | 0.29 to 0.30 | 0.46 | 0.65 | **0.29 to 0.30** |
+| reversing | 0.47 to 0.48 | 1.62 | 1.43 | 1.62 |
 
-let finder = ResonanceFinder::new(100, strategy::CompositeMass, primes::prime_factor_mass);
-let resonances = finder.find_in_range(1, 500);
-println!("Found {} resonance events.", resonances.len());
-```
-
-Example crates for these (`prime_gaps`, `goldbach_projector`, `origin_drift`, `mass_field`) are in `examples/`.
-
+For steady and irregular rotation the consensus finds the best estimator without being told which it is, and the plain mean is 4 to 14 times worse. For **reversing** rotation it does not: four of the six estimators share the same bias (they miss that the orbit does not complete a loop), so they form the majority and the two unbiased ones (midrange, coverage) are outvoted. Consensus protects against a *minority* of estimators failing; it cannot rescue a case where most of them fail alike. If you know which estimators are trustworthy, pass `prior` weights.
 ## Author
 
 Neil Crago
 
 ## Contributing
 
-Contributions are welcome. If you have an idea for a new `OriginStrategy`, an analysis tool, or find a bug, please feel free to open an issue or submit a pull request.
+Contributions are welcome. If you have an idea for an analysis tool or a dataset to validate against, or find a bug, please feel free to open an issue or submit a pull request.
 
 ## License
 

@@ -192,9 +192,9 @@ fn analyse(dir: &Path) -> Option<Cell> {
         (0..frames)
             .map(|t| {
                 let mut s = [0.0; 3];
-                for r in r0..r0 + 5 {
-                    for k in 0..3 {
-                        s[k] += m[k][r][t] / 5.0;
+                for k in 0..3 {
+                    for row in &m[k][r0..r0 + 5] {
+                        s[k] += row[t] / 5.0;
                     }
                 }
                 s
