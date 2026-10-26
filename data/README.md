@@ -44,3 +44,5 @@ doi:10.1038/s41597-026-06876-2; Zenodo 10.5281/zenodo.15299846; CC BY 4.0.
 row per point along the tail (head to tip) and one column per time point; NaNs
 cluster at the tip. The frame rate is not in the Zenodo record, so periods are
 in samples. Used by `examples/sperm_beat.rs`.
+
+Frame rate (from the 3D-SpermVid paper, doi:10.1038/s41597-025-05177-4): objective oscillates at 90 Hz, hyperstacks at 90 per second. Record lengths (65-499 columns) imply 0.7-5.5 s at that rate versus the stated 1-3.5 s, so treat Hz as provisional.

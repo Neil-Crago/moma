@@ -51,6 +51,8 @@ struct Cell {
     shared: f64,
     own: Vec<f64>,
     amplitudes: Vec<f64>,
+    capacitating: bool,
+    head_period: Option<f64>,
 }
 
 fn analyse(dir: &Path) -> Option<Cell> {
@@ -94,7 +96,25 @@ fn analyse(dir: &Path) -> Option<Cell> {
         })
         .collect();
     let name = dir.file_name()?.to_string_lossy().into_owned();
-    Some(Cell { name, frames, shared, own, amplitudes })
+    let capacitating = !dir.to_string_lossy().contains("Non-Capacitating");
+    // Head path: mean of the first rows, searched for a period slower than the beat.
+    let head: Vec<V3> = (0..frames)
+        .map(|t| {
+            let mut s = [0.0; 3];
+            for r in 0..5 {
+                for k in 0..3 {
+                    s[k] += m[k][r][t] / 5.0;
+                }
+            }
+            s
+        })
+        .collect();
+    let head_period = if head.iter().all(|p| p.iter().all(|v| v.is_finite())) {
+        dominant_period_3d(&head, 1.5 * shared, frames as f64 / 2.0)
+    } else {
+        None
+    };
+    Some(Cell { name, frames, shared, own, amplitudes, capacitating, head_period })
 }
 
 /// Relation of a position's own period to the shared one: 1 if within 10%,
@@ -148,6 +168,35 @@ fn main() {
         * results.iter().filter(|c| c.amplitudes[c.amplitudes.len() - 1] > 1.5 * c.amplitudes[0]).count() as f64
         / n;
     let mut shared: Vec<f64> = results.iter().map(|c| c.shared).collect();
+    // Volume rate from the 3D-SpermVid paper: 90 hyperstacks per second.
+    const VOLUMES_PER_SECOND: f64 = 90.0;
+    println!("\nby condition (beat in Hz assumes {VOLUMES_PER_SECOND} volumes/s):");
+    for (label, cap) in [("capacitating", true), ("non-capacitating", false)] {
+        let g: Vec<&Cell> = results.iter().filter(|c| c.capacitating == cap).collect();
+        if g.is_empty() {
+            continue;
+        }
+        let mut p: Vec<f64> = g.iter().map(|c| c.shared).collect();
+        let mut a: Vec<f64> = g.iter().map(|c| c.amplitudes[c.amplitudes.len() - 1]).collect();
+        let mut ratio: Vec<f64> =
+            g.iter().map(|c| c.amplitudes[c.amplitudes.len() - 1] / c.amplitudes[0]).collect();
+        let (p, a, ratio) = (median(&mut p), median(&mut a), median(&mut ratio));
+        println!(
+            "  {label:<17} n={:<3} beat {:.1} samples = {:.1} Hz, tip amplitude {:.2} um, tip/head {:.1}x",
+            g.len(), p, VOLUMES_PER_SECOND / p, a, ratio
+        );
+    }
+    let mut heads: Vec<f64> =
+        results.iter().filter_map(|c| c.head_period.map(|h| h / c.shared)).collect();
+    if !heads.is_empty() {
+        println!(
+            "\nhead-path period (slower than the beat) found in {} cells; ratio to beat period: median {:.1}, range {:.1} to {:.1}",
+            heads.len(),
+            median(&mut heads),
+            heads[0],
+            heads[heads.len() - 1]
+        );
+    }
     println!("positions whose own strongest period equals the shared period (+-10%): {:.0}%", pct(1));
     println!(
         "positions on a harmonic of it: half {:.0}%, third {:.0}%, double {:.0}%, triple {:.0}%; unrelated {:.0}%",

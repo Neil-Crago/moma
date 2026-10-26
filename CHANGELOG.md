@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `sperm_beat` now reports capacitating vs non-capacitating medians and a head-path period. Frame rate taken from the 3D-SpermVid paper (90 hyperstacks/s; record lengths of 0.7-5.5 s do not quite match the stated 1-3.5 s, so Hz values are provisional). Median beat: capacitating 5.1 Hz, non-capacitating 8.1 Hz; tip amplitude about 2.8 um in both. Cells are not independent (10 donors), so this is descriptive only.
 - helix::shared_period_3d: one period pooled across simultaneous tracks (one vote per track), which stops a track dominated by a harmonic from setting the period.
 - xamples/sperm_beat.rs: real-data check on 135 human sperm flagellum centrelines (Zenodo 10.5281/zenodo.15299846). Positions agreeing with the pooled beat period: 94% (vs about 75% of cells when each position chose its own); tip amplitude over 1.5x head amplitude in 96% of cells.
 
