@@ -141,6 +141,14 @@ A bacterial track set was unusable, and the flagellin sequence tables (Nature Co
 | reversing | 0.47 to 0.48 | 1.62 | 1.43 | 1.62 |
 
 For steady and irregular rotation the consensus finds the best estimator without being told which it is, and the plain mean is 4 to 14 times worse. For **reversing** rotation it does not: four of the six estimators share the same bias (they miss that the orbit does not complete a loop), so they form the majority and the two unbiased ones (midrange, coverage) are outvoted. Consensus protects against a *minority* of estimators failing; it cannot rescue a case where most of them fail alike. If you know which estimators are trustworthy, pass `prior` weights.
+
+**Real data: the travelling wave on a sperm tail** (`examples/consensus_wave.rs`, the 135 cells above). The beat phase at consecutive points along a tail advances by a roughly constant step, so those steps are votes that `circular_mean` can combine. Beat phase was measured at 48 positions between 5% and 60% of the tail, weighted by amplitude; nothing about the wave is given to the tools.
+
+* **Negative control:** with the positions in their true order the phase steps have concentration of about 1.00 (median); shuffling the same positions drops it to about 0.49. Real order beats its own shuffle in all 135 cells.
+* **Leave-one-out prediction** of a held-out position's phase from its neighbour (mean absolute error in radians): copying the neighbour 0.071; the single previous step 0.0078; consensus of *all* other steps 0.0147; consensus of the *four nearest* steps 0.0056.
+* **What this says:** a global consensus step is *worse* than the single previous step, because the wave speed varies along the tail, so one constant step is the wrong model. A local consensus beats the single step by about 28%, so consensus helps when the voters estimate the same quantity and noise is the problem. Choose the voters to match the model.
+* **Calibration:** concentration is almost 1 everywhere (0.9998 to 1.0000 across the thirds), but the ordering is right: the lowest-concentration third has the largest error (0.021 against 0.009 for the global consensus). Treat concentration as a ranking signal, not an absolute scale.
+* **Limits:** the published centrelines are smooth and interpolated, which makes this an easy case, and it checks a consensus of one kind (circular) on one dataset. `consensus_axis` has not been tested on real data.
 ## Author
 
 Neil Crago
