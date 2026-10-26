@@ -13,6 +13,11 @@ Refocus on moving-axis analysis of spirals and helices.
   (parallel-transported frame), `repair_3d`, `fill_gaps_3d`,
   `moving_median_axis_3d`, `parse_xyz`.
 - `consensus`: `ring_barycentre` (weighted circular mean on `Z_m`) and `plane_barycentre`.
+- Reversing and irregular rotation: `longest_period` / `longest_period_3d` (robust to
+  harmonics; now used by `auto_axis`), `moving_midrange_axis` (+ `_3d`; centre of a
+  window's coordinate range, not biased by dwelling), `coverage_axis` (+ `_3d`; window
+  grows until one full turn is seen). On the synthetic reversing benchmark axis error
+  fell from 1.6 to about 0.5.
 - Period-aware axis: `dominant_period`, `window_for_period`, `auto_axis`, `total_turns`,
   `total_turns_smoothed`
   (spiral) and `dominant_period_3d`, `auto_axis_3d` (helix). On 20 real pea tracks this

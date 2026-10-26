@@ -20,8 +20,8 @@
 //! ```
 
 use crate::spiral::{
-    dominant_period_cols, fill_gaps_nd, moving_median_nd, outlier_mask, parse_rows, unwrap_phase,
-    window_for_period, Polar,
+    coverage_midrange_nd, dominant_period_cols, fill_gaps_nd, moving_median_nd, moving_midrange_nd,
+    outlier_mask, parse_rows, unwrap_phase, window_for_period, Polar, AUTO_MIN_REL_POWER,
 };
 use std::f64::consts::TAU;
 
@@ -157,6 +157,16 @@ pub fn to_cylindrical(points: &[V3], axis: &[V3]) -> (Vec<Polar>, Vec<f64>) {
 /// line through the track; with no usable drift, all three coordinates are used).
 /// See [`crate::spiral::dominant_period`] for the method and `None` cases.
 pub fn dominant_period_3d(points: &[V3], min_period: f64, max_period: f64) -> Option<f64> {
+    longest_period_3d(points, min_period, max_period, 1.0)
+}
+
+/// 3D counterpart of [`crate::spiral::longest_period`].
+pub fn longest_period_3d(
+    points: &[V3],
+    min_period: f64,
+    max_period: f64,
+    min_rel_power: f64,
+) -> Option<f64> {
     let n = points.len();
     if n < 8 || points.iter().any(|p| p.iter().any(|v| !v.is_finite())) {
         return None;
@@ -179,13 +189,13 @@ pub fn dominant_period_3d(points: &[V3], min_period: f64, max_period: f64) -> Op
         }
         None => (0..3).map(|k| points.iter().map(|p| p[k]).collect()).collect(),
     };
-    dominant_period_cols(&cols, min_period, max_period)
+    dominant_period_cols(&cols, min_period, max_period, min_rel_power)
 }
 
-/// 3D axis with its window set from the measured dominant period. Returns the
-/// axis and the period used.
+/// 3D axis with its window set from the measured longest significant period.
+/// Returns the axis and the period used.
 pub fn auto_axis_3d(points: &[V3], min_period: f64, max_period: f64) -> Option<(Vec<V3>, f64)> {
-    let p = dominant_period_3d(points, min_period, max_period)?;
+    let p = longest_period_3d(points, min_period, max_period, AUTO_MIN_REL_POWER)?;
     Some((moving_axis_3d(points, window_for_period(p)), p))
 }
 
@@ -202,6 +212,27 @@ pub fn fill_gaps_3d(points: &[V3]) -> Vec<V3> {
 /// Per-coordinate moving median axis; robust to spikes and dropouts.
 pub fn moving_median_axis_3d(points: &[V3], window: usize) -> Vec<V3> {
     moving_median_nd(points, window)
+}
+
+/// 3D counterpart of [`crate::spiral::moving_midrange_axis`].
+pub fn moving_midrange_axis_3d(points: &[V3], window: usize, trim: f64) -> Vec<V3> {
+    moving_midrange_nd(points, window, trim)
+}
+
+/// 3D counterpart of [`crate::spiral::coverage_axis`].
+pub fn coverage_axis_3d(
+    points: &[V3],
+    min_window: usize,
+    max_window: usize,
+    trim: f64,
+) -> Vec<V3> {
+    let mut axis = moving_midrange_nd(points, min_window, trim);
+    for _ in 0..3 {
+        let (polar, _) = to_cylindrical(points, &axis);
+        let phase = unwrap_phase(&polar);
+        axis = coverage_midrange_nd(points, &phase, min_window, max_window, 1.0, trim);
+    }
+    axis
 }
 
 /// One-call cleanup for dirty tracks: fills dropouts, finds a robust axis with
@@ -227,6 +258,49 @@ pub fn repair_3d(points: &[V3], window: usize, k: f64) -> Vec<V3> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn reversing_track() -> Vec<V3> {
+        (0..4000)
+            .map(|i| {
+                let t = i as f64;
+                let th = TAU * t / 800.0 + 4.0 * (TAU * t / 2300.0).sin();
+                [3.0 * th.cos(), 0.02 * t, 1.5 * th.sin()]
+            })
+            .collect()
+    }
+
+    #[test]
+    fn coverage_axis_handles_reversing_rotation() {
+        let pts = reversing_track();
+        let err = |axis: &[V3]| {
+            let s: f64 = (600..3400)
+                .map(|i| axis[i][0].powi(2) + (axis[i][1] - 0.02 * i as f64).powi(2) + axis[i][2].powi(2))
+                .sum();
+            (s / 2800.0).sqrt()
+        };
+        let p = longest_period_3d(&pts, 100.0, 2000.0, AUTO_MIN_REL_POWER).unwrap();
+        assert!((p - 800.0).abs() < 100.0, "period {p}");
+        let w = window_for_period(p);
+        let plain = err(&moving_axis_3d(&pts, w));
+        let covered = err(&coverage_axis_3d(&pts, w, 3 * w, 0.02));
+        assert!(covered < 0.6 && covered < 0.5 * plain, "plain {plain} covered {covered}");
+    }
+
+    #[test]
+    fn midrange_is_unbiased_by_dwelling() {
+        // Orbit that dwells near angle 0, so a mean is pulled toward +x but the midrange is not.
+        let pts: Vec<V3> = (0..1000)
+            .map(|i| {
+                let u = i as f64 / 1000.0;
+                let th = TAU * u * u * u;
+                [th.cos(), th.sin(), 0.0]
+            })
+            .collect();
+        let mid = moving_midrange_axis_3d(&pts, 999, 0.0)[500];
+        let mean = moving_axis_3d(&pts, 999)[500];
+        assert!(mid[0].abs() < 0.01 && mid[1].abs() < 0.01, "{mid:?}");
+        assert!(mean[0] > 0.2, "{mean:?}");
+    }
     use crate::spiral::{radius_spread, unwrap_phase, winding_number};
 
     /// Helix of radius `r`, rate 0.2 rad/sample, around a gently curving 3D axis.

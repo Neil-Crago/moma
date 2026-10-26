@@ -173,19 +173,37 @@ pub fn window_for_period(period: f64) -> usize {
 /// Returns `None` for short or non-finite input, or an empty search range
 /// (`max_period` is capped at half the track length so two cycles are seen).
 pub fn dominant_period(points: &[(f64, f64)], min_period: f64, max_period: f64) -> Option<f64> {
-    let xs: Vec<f64> = points.iter().map(|p| p.0).collect();
-    let ys: Vec<f64> = points.iter().map(|p| p.1).collect();
-    dominant_period_cols(&[xs, ys], min_period, max_period)
+    longest_period(points, min_period, max_period, 1.0)
 }
 
-/// Axis from a moving mean whose window is set from the measured dominant
-/// period. Returns the axis and the period used.
+/// Longest oscillation period whose spectral peak has at least `min_rel_power`
+/// (0 to 1) of the strongest peak's power. With `1.0` this is
+/// [`dominant_period`]. Smaller values are robust to reversing or irregular
+/// rotation, where energy spreads into harmonics and a short harmonic can
+/// out-power the true fundamental. The axis window must cover the longest
+/// significant period, so this is what [`auto_axis`] uses.
+pub fn longest_period(
+    points: &[(f64, f64)],
+    min_period: f64,
+    max_period: f64,
+    min_rel_power: f64,
+) -> Option<f64> {
+    let xs: Vec<f64> = points.iter().map(|p| p.0).collect();
+    let ys: Vec<f64> = points.iter().map(|p| p.1).collect();
+    dominant_period_cols(&[xs, ys], min_period, max_period, min_rel_power)
+}
+
+/// Relative power used by [`auto_axis`] and `auto_axis_3d` to accept a peak.
+pub const AUTO_MIN_REL_POWER: f64 = 0.25;
+
+/// Axis from a moving mean whose window is set from the measured longest
+/// significant period. Returns the axis and the period used.
 pub fn auto_axis(
     points: &[(f64, f64)],
     min_period: f64,
     max_period: f64,
 ) -> Option<(Vec<(f64, f64)>, f64)> {
-    let p = dominant_period(points, min_period, max_period)?;
+    let p = longest_period(points, min_period, max_period, AUTO_MIN_REL_POWER)?;
     Some((moving_axis(points, window_for_period(p)), p))
 }
 
@@ -193,6 +211,7 @@ pub(crate) fn dominant_period_cols(
     cols: &[Vec<f64>],
     min_period: f64,
     max_period: f64,
+    min_rel_power: f64,
 ) -> Option<f64> {
     let n = cols.first()?.len();
     if n < 8 || cols.iter().any(|c| c.len() != n || c.iter().any(|v| !v.is_finite())) {
@@ -223,10 +242,19 @@ pub(crate) fn dominant_period_cols(
                 .sum()
         })
         .collect();
-    let interior_peak = (1..count.saturating_sub(1))
+    let peaks: Vec<usize> = (1..count.saturating_sub(1))
         .filter(|&s| power[s] > power[s - 1] && power[s] >= power[s + 1])
-        .max_by(|&a, &b| power[a].total_cmp(&power[b]));
-    let best = interior_peak.or_else(|| (0..count).max_by(|&a, &b| power[a].total_cmp(&power[b])))?;
+        .collect();
+    let strongest = peaks.iter().copied().max_by(|&a, &b| power[a].total_cmp(&power[b]));
+    let best = match strongest {
+        // Frequency rises with the index, so the smallest index is the longest period.
+        Some(top) => peaks
+            .iter()
+            .copied()
+            .find(|&s| power[s] >= min_rel_power.clamp(0.0, 1.0) * power[top])
+            .unwrap_or(top),
+        None => (0..count).max_by(|&a, &b| power[a].total_cmp(&power[b]))?,
+    };
     (power[best] > 0.0).then(|| 1.0 / (f_lo + best as f64 * step))
 }
 
@@ -335,6 +363,116 @@ pub(crate) fn fill_gaps_nd<const D: usize>(points: &[[f64; D]]) -> Vec<[f64; D]>
 pub fn moving_median_axis(points: &[(f64, f64)], window: usize) -> Vec<(f64, f64)> {
     let rows: Vec<[f64; 2]> = points.iter().map(|p| [p.0, p.1]).collect();
     moving_median_nd(&rows, window).into_iter().map(|r| (r[0], r[1])).collect()
+}
+
+/// Axis from the midpoint of each coordinate's `trim`-to-`1 - trim` quantile range
+/// over a centred window (symmetric near the ends). For a centrally symmetric
+/// orbit that spans the window this is the centre however unevenly the orbit is
+/// traversed, unlike a moving mean, which is pulled toward angles where the path
+/// dwells. Use a window of at least one (longest) period; `trim` of about 0.02
+/// resists noise and spikes. Cost is O(n·w log w).
+pub fn moving_midrange_axis(points: &[(f64, f64)], window: usize, trim: f64) -> Vec<(f64, f64)> {
+    let rows: Vec<[f64; 2]> = points.iter().map(|p| [p.0, p.1]).collect();
+    moving_midrange_nd(&rows, window, trim).into_iter().map(|r| (r[0], r[1])).collect()
+}
+
+pub(crate) fn moving_midrange_nd<const D: usize>(
+    points: &[[f64; D]],
+    window: usize,
+    trim: f64,
+) -> Vec<[f64; D]> {
+    let n = points.len();
+    let half = window.max(1) / 2;
+    let trim = if trim.is_nan() { 0.0 } else { trim.clamp(0.0, 0.49) };
+    (0..n)
+        .map(|i| {
+            let h = half.min(i).min(n - 1 - i);
+            let mut out = [f64::NAN; D];
+            for (k, o) in out.iter_mut().enumerate() {
+                let mut vals: Vec<f64> =
+                    points[i - h..=i + h].iter().map(|p| p[k]).filter(|v| v.is_finite()).collect();
+                if !vals.is_empty() {
+                    vals.sort_by(|a, b| a.total_cmp(b));
+                    let last = vals.len() - 1;
+                    let lo = (trim * last as f64).round() as usize;
+                    *o = 0.5 * (vals[lo] + vals[last - lo]);
+                }
+            }
+            out
+        })
+        .collect()
+}
+
+/// Axis for irregular or reversing rotation: a midrange axis whose window at each
+/// sample grows (from `min_window` up to `max_window`) until the orbit has been
+/// seen for one full turn. Start `min_window` at about the longest significant
+/// period (see [`longest_period`]) and set `max_window` to a few times that.
+/// The phase used for the coverage test comes from the previous iterate
+/// (three passes, starting from a plain midrange axis).
+pub fn coverage_axis(
+    points: &[(f64, f64)],
+    min_window: usize,
+    max_window: usize,
+    trim: f64,
+) -> Vec<(f64, f64)> {
+    let rows: Vec<[f64; 2]> = points.iter().map(|p| [p.0, p.1]).collect();
+    let mut axis = moving_midrange_axis(points, min_window, trim);
+    for _ in 0..3 {
+        let phase = unwrap_phase(&to_polar(points, &axis));
+        axis = coverage_midrange_nd(&rows, &phase, min_window, max_window, 1.0, trim)
+            .into_iter()
+            .map(|r| (r[0], r[1]))
+            .collect();
+    }
+    axis
+}
+
+/// Midrange axis whose window at each sample grows until the (smoothed,
+/// unwrapped) `phase` inside it spans at least `turns` full turns, between
+/// `min_window` and `max_window`. When rotation stalls or reverses, a fixed
+/// window may see only part of the orbit, and no local method can locate the
+/// centre of a loop it never saw. Samples that never reach the coverage use
+/// `max_window`.
+pub(crate) fn coverage_midrange_nd<const D: usize>(
+    points: &[[f64; D]],
+    phase: &[f64],
+    min_window: usize,
+    max_window: usize,
+    turns: f64,
+    trim: f64,
+) -> Vec<[f64; D]> {
+    let n = points.len();
+    let smooth = smooth_symmetric(phase, 31);
+    let need = turns * TAU;
+    let (min_half, max_half) = (min_window.max(1) / 2, (max_window.max(min_window)).max(1) / 2);
+    let trim = if trim.is_nan() { 0.0 } else { trim.clamp(0.0, 0.49) };
+    (0..n)
+        .map(|i| {
+            let covered = |h: usize| {
+                let (l, u) = smooth[i - h..=i + h]
+                    .iter()
+                    .fold((f64::INFINITY, f64::NEG_INFINITY), |(l, u), v| (l.min(*v), u.max(*v)));
+                u - l >= need
+            };
+            let limit = max_half.min(i).min(n - 1 - i);
+            let mut h = min_half.min(limit);
+            while h < limit && !covered(h) {
+                h += 1;
+            }
+            let mut out = [f64::NAN; D];
+            for (k, o) in out.iter_mut().enumerate() {
+                let mut vals: Vec<f64> =
+                    points[i - h..=i + h].iter().map(|p| p[k]).filter(|v| v.is_finite()).collect();
+                if !vals.is_empty() {
+                    vals.sort_by(|a, b| a.total_cmp(b));
+                    let last = vals.len() - 1;
+                    let lo = (trim * last as f64).round() as usize;
+                    *o = 0.5 * (vals[lo] + vals[last - lo]);
+                }
+            }
+            out
+        })
+        .collect()
 }
 
 pub(crate) fn moving_median_nd<const D: usize>(points: &[[f64; D]], window: usize) -> Vec<[f64; D]> {

@@ -6,7 +6,9 @@
 //!
 //! Run with: `cargo run --release --example elliptical_bench`
 
-use moma::helix::{auto_axis_3d, moving_axis_3d, to_cylindrical, V3};
+use moma::helix::{
+    auto_axis_3d, coverage_axis_3d, moving_axis_3d, moving_midrange_axis_3d, to_cylindrical, V3,
+};
 use moma::spiral::{total_turns_smoothed, unwrap_phase, window_for_period};
 use std::f64::consts::TAU;
 
@@ -64,7 +66,7 @@ fn axis_err(est: &[V3], lo: usize, hi: usize) -> f64 {
 
 fn main() {
     println!("true period {PERIOD}; ellipse semi-axes 3.0 x 1.5; N = {N}\n");
-    println!("case        noise  method        window  axis err  turns (true)   turns err");
+    println!("case        noise  method            window  axis err  turns (true)   turns err");
     // wobble 0 is steady; 1.0 is irregular but monotonic; 4.0 reverses direction.
     for (case, wobble) in [("steady", 0.0), ("irregular", 1.0), ("reversing", 4.0)] {
         for noise in [0.05, 0.3] {
@@ -77,7 +79,14 @@ fn main() {
                 .map(|&w| ("fixed".to_string(), w, moving_axis_3d(&pts, w)))
                 .collect();
             if let Some((ax, p)) = auto {
-                runs.push((format!("auto p={p:.0}"), window_for_period(p), ax));
+                let w = window_for_period(p);
+                runs.push((format!("midrange p={p:.0}"), w, moving_midrange_axis_3d(&pts, w, 0.02)));
+                runs.push((
+                    format!("coverage p={p:.0}"),
+                    w,
+                    coverage_axis_3d(&pts, w, 3 * w, 0.02),
+                ));
+                runs.push((format!("auto p={p:.0}"), w, ax));
             }
             for (name, w, ax) in runs {
                 let (polar, _) = to_cylindrical(&pts, &ax);
@@ -85,7 +94,7 @@ fn main() {
                 let turns = total_turns_smoothed(&u[lo..hi], 101);
                 let truth = true_turns * (hi - lo) as f64 / N as f64;
                 println!(
-                    "{case:<10}  {noise:<5}  {name:<12}  {w:<6}  {:<8.3}  {turns:>6.1} ({truth:>5.1})  {:>+6.0}%",
+                    "{case:<10}  {noise:<5}  {name:<16}  {w:<6}  {:<8.3}  {turns:>6.1} ({truth:>5.1})  {:>+6.0}%",
                     axis_err(&ax, lo, hi),
                     100.0 * (turns - truth) / truth
                 );
