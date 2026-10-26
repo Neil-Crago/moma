@@ -1,17 +1,18 @@
 [package]
 name = "moma"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2024"
 authors = ["Neil Crago"]
-description = "Moving Origin Modular Arithmetic (MOMA), a library for modeling complex systems"
+description = "Moving Origin Modular Arithmetic (MOMA): moving-axis analysis of spirals and helices, plus ring barycentres and prime-based signatures"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/neil-crago/moma"
 documentation = "https://docs.rs/moma"
-keywords = ["modulo", "barycenter", "quantized", "complexity", "modeling"]
+keywords = ["modulo", "barycenter", "helix", "spiral", "signal-analysis"]
 include = [
     "src/*.rs",
     "Cargo.toml",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE-MIT",
     "LICENSE-APACHE",
 ]

@@ -49,7 +49,7 @@
                 return value;
             }
             let origin = self.strategy.calculate_origin(prime_context);
-            (value.wrapping_add(origin)) % self.modulus
+            ((value % self.modulus) + (origin % self.modulus)) % self.modulus
         }
 
         /// A convenience method for calculating the "signature" of a prime.

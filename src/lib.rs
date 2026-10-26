@@ -1,8 +1,18 @@
 //! # MOMA: Moving Origin Modular Arithmetic
 //!
-//! A framework for exploring number theory, cryptography, and bioinformatics
-//! through the lens of a "moving origin" in modular arithmetic.
-// ... (rest of your existing lib.rs documentation)
+//! A toolkit built on one idea: measure things relative to an origin that *moves*.
+//!
+//! * **Moving-axis analysis** ([`spiral`], [`helix`]): a spiral around a wandering
+//!   axis looks irregular in fixed coordinates but is a steady rotation relative
+//!   to the axis. Estimate the axis (fixed, adaptive or jointly fitted), repair
+//!   dirty tracks, and read off radius, phase, winding and ring signatures.
+//! * **Ring barycentres** ([`consensus`]): weighted circular means on `Z_m` and
+//!   planar barycentres, the right "average" when positions wrap.
+//! * **The ring itself** ([`core`], [`strategy`]): `MomaRing` with a pluggable
+//!   [`OriginStrategy`]. The prime-based strategies and the number-theory and
+//!   bioinformatics modules are the crate's original, more speculative uses.
+//!
+//! The spiral and helix tools are validated on synthetic data only so far.
 
 // --- Module Declarations ---
 pub mod analysis;
@@ -21,6 +31,9 @@ pub mod resonance; // New
 pub mod strategy;
 pub mod score;
 pub mod barycentric; // New
+pub mod consensus;
+pub mod spiral;
+pub mod helix;
 pub mod utils;
 
 // --- Public API Re-exports ---

@@ -7,37 +7,33 @@
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue?style=flat-square)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/neil-crago/moma/actions/workflows/rust.yml/badge.svg)](https://github.com/neil-crago/moma/actions/workflows/rust.yml)
 
-**MOMA** is a Rust framework for exploring number theory, cryptography, and bioinformatics through the lens of **Moving Origin Modular Arithmetic**.
+**MOMA** is a Rust toolkit for analysing things relative to an origin that *moves*. Its main use is **spirals and helices around a wandering axis**: the kind of path you get from a flagellum, a tendril, a vortex track or a coiled filament. Seen in fixed coordinates these look irregular; relative to a moving axis they are a steady rotation you can measure.
 
-The crate is designed for researchers and developers interested in a novel, relational framework for analyzing complex sequences.
+The crate also keeps its original ring-based tools (modular arithmetic with a movable origin, prime-based signatures, a little bioinformatics), described under [Legacy and experimental](#legacy-and-experimental).
+
+> **Status:** the spiral and helix tools are tested on synthetic data with known ground truth. They have not yet been validated on real measurements.
 
 ---
 
-## The Core Idea: A Barycenter for Numbers
+## The Core Idea: A Barycenter for Paths
 
-The inspiration for this crate comes from the concept of a **barycenter** in astrophysics. Just as the Earth and Moon orbit a common center of mass that is not the exact center of the Earth, MOMA treats modular arithmetic as a system where the "zero point" or "origin" is not fixed.
-
-This origin shifts dynamically based on a contextual value—typically a prime number `p`—and the chosen `OriginStrategy`. This provides a novel relational framework for analyzing complex systems.
+Just as the Earth and Moon orbit a common center of mass that is not the center of the Earth, a spiral rotates around an axis that is itself moving. Subtract the moving axis and what is left is radius, phase and progress along the axis, which are the quantities you actually care about. Phase lives on a circle, so it also maps naturally onto a ring `Z_m`, which is where the modular arithmetic comes in.
 
 > The original inspiration came from this NASA article: [What Is a Barycenter?](https://spaceplace.nasa.gov/barycenter/en/)
 
 ## Core Concepts
 
-The MOMA framework is built on a few simple but powerful ideas:
-
-* **`MomaRing`**: the primary object for calculations. A ring is defined by a `modulus` and a chosen `OriginStrategy`.
-* **`OriginStrategy`**: a trait that defines how the origin moves, making the framework highly extensible.
-* **Analysis tools**: a suite of modular tools for deeper analysis.
-  * **Number theory**: `MassField`, `OriginDrift`, `CompositeInfluence`, `CompositeDampener`, `GoldbachProjector`, `Entropy`, and `ResonanceFinder`.
-  * **Bioinformatics**: `BioSigAnalyzer`, `CodonTable`, and `Mutation` for mapping numeric signatures to biological events.
+* **`spiral` / `helix`**: moving-axis analysis in 2D and 3D.
+* **`consensus`**: weighted barycentres, using a circular mean on `Z_m` (so 1 and 9 on `Z_10` average to 0, not 5).
+* **`MomaRing` and `OriginStrategy`**: the underlying ring with a pluggable origin.
 
 ## Features
 
-* **Flexible Core**: A powerful and extensible system based on the `MomaRing` and `OriginStrategy` trait.
-* **Advanced Analysis Tools**: A suite of high-level structs for statistical, number-theoretic, and bioinformatics analysis.
-* **Cryptographic Primitives**: Demonstrates how MOMA can be used to build components like a Key Derivation Function.
-* **Prime Number Utilities**: A helper `primes` module for primality testing and prime generation.
-* **Pure Rust**: Built with safe, idiomatic Rust.
+* **Axis estimation**: fixed window, adaptive window, and a joint axis-and-rotation fit that reports its own residual.
+* **Dirty-data handling**: gap filling, outlier rejection and a median axis, with one-call repair for 3D tracks.
+* **Ring signatures**: winding number, quantised phase, and a backward-step (slip) count.
+* **Your own data**: `parse_xy` and `parse_xyz` read CSV-like text.
+* **Pure Rust**, no heavy dependencies.
 
 ---
 
@@ -47,7 +43,7 @@ Add MOMA to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-moma = "0.4"
+moma = "0.5"
 ```
 
 or simply run:
@@ -56,65 +52,57 @@ or simply run:
 cargo add moma
 ```
 
-## Exploring MOMA
+## Quick start
 
-MOMA is a toolkit for exploration across different domains.
+```rust
+use moma::helix::{adaptive_axis_3d, to_cylindrical, repair_3d};
+use moma::spiral::{unwrap_phase, winding_number};
 
-### Example 1: Finding "Resonance"
+// `points` is your 3D track, e.g. from `moma::helix::parse_xyz(&text)`.
+let points = repair_3d(&points, 31, 4.0);          // fill dropouts, drop spikes
+let axis = adaptive_axis_3d(&points, 31, 3);        // moving axis
+let (polar, along) = to_cylindrical(&points, &axis); // radius, phase, progress
+let turns = winding_number(&unwrap_phase(&polar)).abs();
+```
 
-Use the `ResonanceFinder` to find primes where the MOMA signature is a multiple of another property of the prime, such as its number of prime factors (`prime_factor_mass`).
+## Results on synthetic data
+
+Run with `cargo run --example <name>`; each compares methods against the true axis.
+
+* **`flagellum`**: a bending 3D helix whose wave speeds up 2.5x. The adaptive axis cuts axis error about 4x against the best fixed window (0.03 against 0.10) and recovers 52.05 of 52.24 true turns.
+* **`helix_stress`**: noise, dropouts and spikes. Repairing a damaged track restores axis error from 1.9 to 0.03 and the winding count from 30 to 42.6 turns (true 42.6). The joint fit helps at low noise and gives no gain at high noise.
+* **`snaking_spiral`**: 2D noise sweep and window-length comparison.
+
+Caveats: the adaptive window only helps when rotation speed varies (it was worse than a fixed window on constant-speed data); the window must be roughly one turn; gap filling restores the axis, not the lost rotation; heavy noise degrades every method.
+
+## Spirals around a moving axis
+
+`moma::spiral` (2D) and `moma::helix` (3D) re-express a path relative to a moving origin (the local barycentre), with the 3D phase measured in a parallel-transported frame so it does not twist on its own.
+
+- **Axis estimation:** `moving_axis` / `moving_axis_3d` (fixed window), `adaptive_axis` / `adaptive_axis_3d` (window sized to the local rotation period), `refine_axis` (2D joint fit).
+- **Dirty data:** `fill_gaps`, `moving_median_axis`, `reject_outliers`, and `helix::repair_3d`.
+- **Ring link:** `quantise_phase` maps phase to `Z_m`; `quantised_steps`, `backward_steps` and `winding_number` give slip and winding signatures.
+- **Your data:** `parse_xy` / `helix::parse_xyz`.
+
+### Barycentric consensus
+
+`moma::consensus` computes weighted barycentres on the ring and in the plane (as an `OriginShift`).
+
+## Legacy and experimental
+
+The crate's original modules remain, but are more speculative and are not the focus: prime-based origin strategies (`PrimeGap`, `CompositeMass`), `ResonanceFinder`, `MassField`, `OriginDrift`, `GoldbachProjector`, and the bioinformatics helpers `BioSigAnalyzer`, `CodonTable` and `Mutation`.
 
 ```rust
 use moma::resonance::ResonanceFinder;
 use moma::strategy;
 use moma::primes;
 
-// Find primes where the signature (using CompositeMass strategy)
-// is divisible by the prime factor mass.
-let finder = ResonanceFinder::new(
-    100,
-    strategy::CompositeMass,
-    primes::prime_factor_mass,
-);
-
-// Search for resonance events in the range 1 to 500.
+let finder = ResonanceFinder::new(100, strategy::CompositeMass, primes::prime_factor_mass);
 let resonances = finder.find_in_range(1, 500);
-
 println!("Found {} resonance events.", resonances.len());
-for (prime, signature) in resonances {
-    println!("  - Resonance at p={} with signature {}", prime, signature);
-}
 ```
 
-### Example 2: Bioinformatics Signature Analysis
-
-Use the `BioSigAnalyzer` to map MOMA signatures to simulated genetic mutations.
-
-```rust
-use moma::biosig::BioSigAnalyzer;
-use moma::strategy;
-
-let analyzer = BioSigAnalyzer::new(60, strategy::CompositeMass);
-let dna_sequence = "AGCTGCGATCGTACGATCGATCGTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCT";
-
-// Analyze the mutational effect of the signature derived from prime 13.
-if let Some((signature, mutation)) = analyzer.analyze(13, dna_sequence) {
-    println!("Signature for p=13 is {}", signature);
-    println!("Resulting mutation type: {:?}", mutation.mutation_type);
-}
-```
-
-## More Examples
-
-There are more examples in the GitHub repository, including:
-
-* **Cosmology** - for astrophysics-oriented exploration
-* **Bioinformatics** - for biological and sequence-based models
-* **Prime Gaps** - for number-theory-focused experiments
-* **Goldbach Projector** - for Goldbach conjecture investigations
-* **Origin Drift** - to understand how a MOMA origin drifts over time
-* **Key Derivation Function (KDF)** - for cryptographic-style experimentation
-* **Mass Field** - for building a mass field across a chosen range
+Example crates for these (`prime_gaps`, `goldbach_projector`, `origin_drift`, `mass_field`) are in `examples/`.
 
 ## Author
 
