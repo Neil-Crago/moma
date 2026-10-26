@@ -118,6 +118,7 @@ A bacterial track set was unusable, and the flagellin sequence tables (Nature Co
 `moma::spiral` (2D) and `moma::helix` (3D) re-express a path relative to a moving origin (the local barycentre), with the 3D phase measured in a parallel-transported frame so it does not twist on its own.
 
 - **Axis estimation:** `moving_axis` / `moving_axis_3d` (fixed window), `adaptive_axis` / `adaptive_axis_3d` (window sized to the local rotation period), `refine_axis` (2D joint fit).
+- **Period finding:** `dominant_period` / `longest_period` (and `_3d`), `auto_axis`, `coverage_axis`, `moving_axis_period`, and `helix::shared_period_3d` (one period pooled across simultaneous tracks).
 - **Dirty data:** `fill_gaps`, `moving_median_axis`, `reject_outliers`, and `helix::repair_3d`.
 - **Ring link:** `quantise_phase` maps phase to `Z_m`; `quantised_steps`, `backward_steps` and `winding_number` give slip and winding signatures.
 - **Your data:** `parse_xy` / `helix::parse_xyz`.
