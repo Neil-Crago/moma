@@ -140,6 +140,7 @@ struct Cell {
     amplitudes: Vec<f64>,
     capacitating: bool,
     head_period: Option<f64>,
+    head_period_b: Option<f64>,
     head_p: Option<f64>,
     beat_p: Option<f64>,
 }
@@ -187,19 +188,30 @@ fn analyse(dir: &Path) -> Option<Cell> {
     let name = dir.file_name()?.to_string_lossy().into_owned();
     let capacitating = !dir.to_string_lossy().contains("Non-Capacitating");
     // Head path: mean of the first rows, searched for a period slower than the beat.
-    let head: Vec<V3> = (0..frames)
-        .map(|t| {
-            let mut s = [0.0; 3];
-            for r in 0..5 {
-                for k in 0..3 {
-                    s[k] += m[k][r][t] / 5.0;
+    let head_track = |r0: usize| -> Vec<V3> {
+        (0..frames)
+            .map(|t| {
+                let mut s = [0.0; 3];
+                for r in r0..r0 + 5 {
+                    for k in 0..3 {
+                        s[k] += m[k][r][t] / 5.0;
+                    }
                 }
-            }
-            s
-        })
-        .collect();
-    let head_period = if head.iter().all(|p| p.iter().all(|v| v.is_finite())) {
+                s
+            })
+            .collect()
+    };
+    let finite = |v: &[V3]| v.iter().all(|p| p.iter().all(|x| x.is_finite()));
+    let head = head_track(0);
+    let head_period = if finite(&head) {
         dominant_period_3d(&head, 1.5 * shared, frames as f64 / 2.0)
+    } else {
+        None
+    };
+    // The same slow motion should show up 2 um further down the tail.
+    let neighbour = head_track(20);
+    let head_period_b = if finite(&neighbour) {
+        dominant_period_3d(&neighbour, 1.5 * shared, frames as f64 / 2.0)
     } else {
         None
     };
@@ -219,7 +231,7 @@ fn analyse(dir: &Path) -> Option<Cell> {
         300,
         seed + 1,
     );
-    Some(Cell { name, frames, shared, own, amplitudes, capacitating, head_period, head_p, beat_p })
+    Some(Cell { name, frames, shared, own, amplitudes, capacitating, head_period, head_period_b, head_p, beat_p })
 }
 
 /// Relation of a position's own period to the shared one: 1 if within 10%,
@@ -304,6 +316,36 @@ fn main() {
     report("  head slow band                   ", results.iter().filter_map(|c| c.head_p).collect());
     let mut heads: Vec<f64> =
         results.iter().filter_map(|c| c.head_period.map(|h| h / c.shared)).collect();
+    let real: Vec<&Cell> =
+        results.iter().filter(|c| c.head_p.is_some_and(|p| p < 0.05) && c.head_period.is_some()).collect();
+    println!("\ncells with a significant slow head oscillation: {} of {}", real.len(), results.len());
+    let both: Vec<&&Cell> = real.iter().filter(|c| c.head_period_b.is_some()).collect();
+    let stable = both
+        .iter()
+        .filter(|c| (c.head_period_b.unwrap() / c.head_period.unwrap() - 1.0).abs() < 0.2)
+        .count();
+    if !both.is_empty() {
+        println!(
+            "  same period (+-20%) 2 um further down the tail: {} of {} (a whole-cell motion should agree)",
+            stable,
+            both.len()
+        );
+    }
+    for (label, cap) in [("capacitating", true), ("non-capacitating", false)] {
+        let g: Vec<&&Cell> = real.iter().filter(|c| c.capacitating == cap).collect();
+        let total = results.iter().filter(|c| c.capacitating == cap).count();
+        if g.is_empty() {
+            continue;
+        }
+        let mut hz: Vec<f64> = g.iter().map(|c| 180.0 / c.head_period.unwrap()).collect();
+        let mut ratio: Vec<f64> = g.iter().map(|c| c.head_period.unwrap() / c.shared).collect();
+        println!(
+            "  {label:<17} {} of {total} cells; slow period median {:.1} Hz, {:.1}x the beat period",
+            g.len(),
+            median(&mut hz),
+            median(&mut ratio)
+        );
+    }
     if !heads.is_empty() {
         println!(
             "\nhead-path period (slower than the beat) found in {} cells; ratio to beat period: median {:.1}, range {:.1} to {:.1}",
