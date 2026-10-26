@@ -475,6 +475,43 @@ pub(crate) fn coverage_midrange_nd<const D: usize>(
         .collect()
 }
 
+/// Moving mean over a window of exactly `period` samples, which may be fractional:
+/// samples within `(period - 1) / 2` of the centre get weight 1 and the next
+/// pair out gets the remaining fraction. An integer window cannot cancel an orbit
+/// whose period is not an integer (3.6 for an alpha helix), and the leftover
+/// ripple inflates radius and axis length. Windows are symmetric and shrink near
+/// the ends. Returns an empty vec for empty input; a non-finite or sub-1 period
+/// is treated as 1 (the points themselves).
+pub fn moving_axis_period(points: &[(f64, f64)], period: f64) -> Vec<(f64, f64)> {
+    let rows: Vec<[f64; 2]> = points.iter().map(|p| [p.0, p.1]).collect();
+    weighted_period_nd(&rows, period).into_iter().map(|r| (r[0], r[1])).collect()
+}
+
+pub(crate) fn weighted_period_nd<const D: usize>(points: &[[f64; D]], period: f64) -> Vec<[f64; D]> {
+    let n = points.len();
+    let period = if period.is_finite() { period.max(1.0) } else { 1.0 };
+    let m = ((period - 1.0) / 2.0).floor() as usize;
+    let partial = (period - (2 * m + 1) as f64) / 2.0;
+    (0..n)
+        .map(|i| {
+            let reach = (m + 1).min(i).min(n - 1 - i);
+            let mut sum = [0.0; D];
+            let mut total = 0.0;
+            for (j, p) in points.iter().enumerate().take(i + reach + 1).skip(i - reach) {
+                let d = j.abs_diff(i);
+                let w = if d <= m { 1.0 } else { partial };
+                if w > 0.0 && p.iter().all(|v| v.is_finite()) {
+                    total += w;
+                    for k in 0..D {
+                        sum[k] += w * p[k];
+                    }
+                }
+            }
+            if total > 0.0 { sum.map(|s| s / total) } else { [f64::NAN; D] }
+        })
+        .collect()
+}
+
 pub(crate) fn moving_median_nd<const D: usize>(points: &[[f64; D]], window: usize) -> Vec<[f64; D]> {
     let n = points.len();
     let half = window.max(1) / 2;

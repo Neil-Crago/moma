@@ -21,7 +21,8 @@
 
 use crate::spiral::{
     coverage_midrange_nd, dominant_period_cols, fill_gaps_nd, moving_median_nd, moving_midrange_nd,
-    outlier_mask, parse_rows, unwrap_phase, window_for_period, Polar, AUTO_MIN_REL_POWER,
+    outlier_mask, parse_rows, unwrap_phase, weighted_period_nd, window_for_period, Polar,
+    AUTO_MIN_REL_POWER,
 };
 use std::f64::consts::TAU;
 
@@ -219,6 +220,11 @@ pub fn moving_midrange_axis_3d(points: &[V3], window: usize, trim: f64) -> Vec<V
     moving_midrange_nd(points, window, trim)
 }
 
+/// 3D counterpart of [`crate::spiral::moving_axis_period`] (fractional window).
+pub fn moving_axis_period_3d(points: &[V3], period: f64) -> Vec<V3> {
+    weighted_period_nd(points, period)
+}
+
 /// 3D counterpart of [`crate::spiral::coverage_axis`].
 pub fn coverage_axis_3d(
     points: &[V3],
@@ -284,6 +290,24 @@ mod tests {
         let plain = err(&moving_axis_3d(&pts, w));
         let covered = err(&coverage_axis_3d(&pts, w, 3 * w, 0.02));
         assert!(covered < 0.6 && covered < 0.5 * plain, "plain {plain} covered {covered}");
+    }
+
+    #[test]
+    fn fractional_window_recovers_an_alpha_helix() {
+        // Ideal alpha helix C-alpha trace: radius 2.3, 100 deg and 1.5 A per residue.
+        let pts: Vec<V3> = (0..60)
+            .map(|i| {
+                let th = (100.0f64).to_radians() * i as f64;
+                [2.3 * th.cos(), 2.3 * th.sin(), 1.5 * i as f64]
+            })
+            .collect();
+        let axis = moving_axis_period_3d(&pts, 3.6);
+        for a in &axis[5..55] {
+            assert!(a[0].hypot(a[1]) < 0.15, "{a:?}");
+        }
+        let integer = moving_axis_3d(&pts, 5);
+        let ripple = |ax: &[V3]| ax[5..55].iter().map(|a| a[0].hypot(a[1])).fold(0.0, f64::max);
+        assert!(ripple(&axis) < 0.5 * ripple(&integer));
     }
 
     #[test]

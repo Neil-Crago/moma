@@ -13,6 +13,11 @@ Refocus on moving-axis analysis of spirals and helices.
   (parallel-transported frame), `repair_3d`, `fill_gaps_3d`,
   `moving_median_axis_3d`, `parse_xyz`.
 - `consensus`: `ring_barycentre` (weighted circular mean on `Z_m`) and `plane_barycentre`.
+- Fractional-window axis: `moving_axis_period` / `moving_axis_period_3d` (mean over exactly
+  `period` samples, fractional end weights). On the alpha helices of the flagellar
+  filament PDB entry 1UCU (`examples/pdb_helices.rs`) it recovers radius 2.20 A,
+  100.9 deg and 1.49 A per residue (ideal 2.3, 100, 1.5); an integer window of 5 gave
+  radius 2.83 A and rise 1.71 A.
 - Reversing and irregular rotation: `longest_period` / `longest_period_3d` (robust to
   harmonics; now used by `auto_axis`), `moving_midrange_axis` (+ `_3d`; centre of a
   window's coordinate range, not biased by dwelling), `coverage_axis` (+ `_3d`; window

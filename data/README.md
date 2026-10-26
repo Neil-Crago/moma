@@ -11,6 +11,11 @@
 Plain `x,y,z` rows, no header; y is the growth direction. The other 19 recordings
 are at the DOI above. This directory is not included in the published crate.
 
+**`1UCU.pdb`** is the PDB entry 1UCU (Yonekura et al., *Nature* 2003, "R-type
+straight flagellar filament made of full-length flagellin", 4 Å cryo-EM; one
+Salmonella flagellin chain). Public domain (PDB). Used by `examples/pdb_helices.rs`
+as a real-coordinate accuracy check: the alpha helices in it have known geometry.
+
 ## Datasets tried and rejected
 
 **Magnetotactic bacteria 3D tracks** (Bente et al., eLife 2020, Dryad
