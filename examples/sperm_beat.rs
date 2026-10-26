@@ -168,8 +168,9 @@ fn main() {
         * results.iter().filter(|c| c.amplitudes[c.amplitudes.len() - 1] > 1.5 * c.amplitudes[0]).count() as f64
         / n;
     let mut shared: Vec<f64> = results.iter().map(|c| c.shared).collect();
-    // Volume rate from the 3D-SpermVid paper: 90 hyperstacks per second.
-    const VOLUMES_PER_SECOND: f64 = 90.0;
+    // The piezo sweeps at 90 Hz and each up or down sweep is one volume (29-45
+    // planes at 5000-8000 fps), giving 180 volumes per second.
+    const VOLUMES_PER_SECOND: f64 = 180.0;
     println!("\nby condition (beat in Hz assumes {VOLUMES_PER_SECOND} volumes/s):");
     for (label, cap) in [("capacitating", true), ("non-capacitating", false)] {
         let g: Vec<&Cell> = results.iter().filter(|c| c.capacitating == cap).collect();

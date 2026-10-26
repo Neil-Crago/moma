@@ -45,4 +45,4 @@ row per point along the tail (head to tip) and one column per time point; NaNs
 cluster at the tip. The frame rate is not in the Zenodo record, so periods are
 in samples. Used by `examples/sperm_beat.rs`.
 
-Frame rate (from the 3D-SpermVid paper, doi:10.1038/s41597-025-05177-4): objective oscillates at 90 Hz, hyperstacks at 90 per second. Record lengths (65-499 columns) imply 0.7-5.5 s at that rate versus the stated 1-3.5 s, so treat Hz as provisional.
+Volume rate: 180 per second. The piezo oscillates at 90 Hz and each up or down sweep is one volume (camera 5000-8000 fps, 29-45 planes per volume; acquisition section of doi:10.1038/s41597-026-06876-2). The longest record (499 volumes) is 2.8 s.
