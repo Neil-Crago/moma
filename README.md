@@ -11,7 +11,7 @@
 
 The crate also keeps its original ring-based tools (modular arithmetic with a movable origin, prime-based signatures, a little bioinformatics), described under [Legacy and experimental](#legacy-and-experimental).
 
-> **Sperm flagellum check:** on 135 real human sperm centrelines (`examples/sperm_beat.rs`, Zenodo 10.5281/zenodo.15299846) every point of a tail must beat at one frequency and amplitude must grow toward the tip; neither is given to the tools. Pooling positions (`shared_period_3d`) gives 94% of positions agreeing with the shared period (each choosing alone: about 75% of cells agreed, the rest locking on harmonics), and 96% of cells show amplitude growth. Periods are in samples (frame rate unknown). This checks consistency, not absolute accuracy.
+> **Real-data validation:** see [Results on real data](#results-on-real-data) for the human sperm flagellum, flagellin PDB and pea-shoot checks, including what failed.
 
 > **Real-structure check:** the alpha helices in a real flagellar filament structure (PDB 1UCU, `examples/pdb_helices.rs`) have known geometry (radius 2.3 A, 100 degrees and 1.5 A per residue). With a fractional window equal to the measured period (`moving_axis_period_3d`) the tools recover 2.20 A, 100.9 degrees and 1.49 A across five helices, and the measured period is 3.4 to 3.6 residues. An integer window overestimated radius and rise by 20%, because 3.6 is not an integer. This is a static structure, so it checks the geometry, not tracking over time.
 
@@ -78,6 +78,40 @@ Run with `cargo run --example <name>`; each compares methods against the true ax
 * **`snaking_spiral`**: 2D noise sweep and window-length comparison.
 
 Caveats: the adaptive window only helps when rotation speed varies (it was worse than a fixed window on constant-speed data); the window must be roughly one turn; gap filling restores the axis, not the lost rotation; heavy noise degrades every method.
+
+## Results on real data
+
+Datasets and licences are listed in [`data/README.md`](data/README.md). Large files are not committed. Real data has no ground truth for the axis, so each check uses either known geometry or a property the data must satisfy that the tools are not told.
+
+### Human sperm flagellum centrelines (3D+t)
+
+`examples/sperm_beat.rs` on 135 cells from 3D-SpermFlagella (Zenodo 10.5281/zenodo.15299846, CC BY 4.0; 10 donors). Each point on a tail is a 3D track oscillating around a drifting axis. Volume rate 180 per second (90 Hz piezo, one volume per sweep, from the dataset paper), but the shortest records (65 volumes) do not match the stated 1 to 3.5 s, so Hz values are provisional.
+
+Properties the data must satisfy, not given to the tools:
+
+* **One beat frequency along a tail.** Each position choosing its own period agreed in only about 75% of cells; most of the rest locked on a harmonic that outweighed the fundamental. Pooling the positions with `shared_period_3d` (one vote per track) gives 94% of positions, and 94% of cells with at least 75% of positions, agreeing with the shared period. The remaining positions are unrelated to it, not harmonics, so they are probably noisy or short records.
+* **Amplitude grows head to tip.** Tip amplitude exceeds 1.5x the head-side amplitude in 96% of cells.
+
+Descriptive results (not independent: cells share donors, and no significance test was run):
+
+| Condition | Cells | Beat | Tip amplitude |
+|---|---|---|---|
+| Capacitating | 86 | 10.1 Hz | 2.85 um |
+| Non-capacitating | 49 | 16.1 Hz | 2.80 um |
+
+A slow oscillation of the head path was tested against AR(1) red-noise surrogates (300 per cell). The positive control, the tail beat band, is significant in 94% of cells. The slow head band is significant in only 13% (17 cells; 5% expected by chance), so for most cells the slow period is just the largest noise peak. Of those 17, 15 show the same period 2 um further down the tail, about 4.4 Hz (2.8x the beat period), as a whole-cell motion should. The records are too short to say more; "not detectable" is not "absent", and the test removes only linear drift so it is conservative. Do not read the 2.8x ratio or a capacitation difference into this.
+
+### Flagellin filament structure (PDB 1UCU)
+
+`examples/pdb_helices.rs` treats each alpha helix as a 3D helix. Ideal geometry is radius 2.3 A, 100 degrees and 1.5 A per residue; with a window equal to the measured (fractional) period, `moving_axis_period_3d` recovers 2.20 A, 100.9 degrees and 1.49 A across five helices. An integer window overestimated radius and rise by 20%. It is a static structure, so it tests geometry, not tracking over time.
+
+### Pea-shoot circumnutation
+
+`examples/real_track.rs` on 20 tracks (Zenodo 10.5281/zenodo.22015401): fixed windows of 100 to 400 samples were inconsistent, because the motion is an irregular ellipse with a period of 340 to 1900 samples. Period-matched windows cut the window-to-window spread to 7 to 31% (radius) and 10 to 40% (turns). That is consistency only.
+
+### Rejected datasets
+
+A bacterial track set was unusable, and the flagellin sequence tables (Nature Communications 2024, figshare) contain no coordinates; see `data/README.md`.
 
 ## Spirals around a moving axis
 
