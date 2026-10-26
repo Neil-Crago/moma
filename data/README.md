@@ -35,3 +35,12 @@ organism, flagellin length, AlphaFold score, Pfam domains) and
 proteins). Neither contains coordinates or time series, so neither can test the
 axis or rotation tools. They are sequence and annotation data. Both are kept
 untracked and are not committed.
+
+**3D-SpermFlagella** (`Sperm_flagellum_centerlines_3D.zip`, 117 MB, untracked):
+3D+t human sperm flagellum centrelines, Hernandez Herrera, Hernandez,
+Bribiesca-Sanchez, Montoya, Diaz-Guerrero, Darszon, Corkidi; Sci Data 2026,
+doi:10.1038/s41597-026-06876-2; Zenodo 10.5281/zenodo.15299846; CC BY 4.0.
+135 cells, 1-3.5 s each. Each cell folder has `X.csv`/`Y.csv`/`Z.csv` with one
+row per point along the tail (head to tip) and one column per time point; NaNs
+cluster at the tip. The frame rate is not in the Zenodo record, so periods are
+in samples. Used by `examples/sperm_beat.rs`.

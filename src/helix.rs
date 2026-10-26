@@ -168,6 +168,13 @@ pub fn longest_period_3d(
     max_period: f64,
     min_rel_power: f64,
 ) -> Option<f64> {
+    let cols = perpendicular_columns(points)?;
+    dominant_period_cols(&cols, min_period, max_period, min_rel_power)
+}
+
+/// The coordinates of a track perpendicular to its drift (two columns), or all
+/// three when there is no usable drift. `None` for short or non-finite input.
+fn perpendicular_columns(points: &[V3]) -> Option<Vec<Vec<f64>>> {
     let n = points.len();
     if n < 8 || points.iter().any(|p| p.iter().any(|v| !v.is_finite())) {
         return None;
@@ -179,7 +186,7 @@ pub fn longest_period_3d(
         let mean = points.iter().map(|p| p[k]).sum::<f64>() / n as f64;
         slope[k] = (0..n).map(|i| (i as f64 - tm) * (points[i][k] - mean)).sum::<f64>() / var_t;
     }
-    let cols: Vec<Vec<f64>> = match unit(slope) {
+    Some(match unit(slope) {
         Some(d) => {
             let e1 = any_perpendicular(d);
             let e2 = cross(d, e1);
@@ -189,8 +196,34 @@ pub fn longest_period_3d(
             ]
         }
         None => (0..3).map(|k| points.iter().map(|p| p[k]).collect()).collect(),
-    };
-    dominant_period_cols(&cols, min_period, max_period, min_rel_power)
+    })
+}
+
+/// One period shared by several simultaneous tracks of equal length (for example
+/// points along one flagellum, which all beat at the same frequency). Each
+/// track's oscillation is scaled to unit variance and the spectra are pooled, so
+/// every track gets one vote and a track that is dominated by a harmonic is
+/// outvoted by the others. Returns `None` if there are no tracks, they differ in
+/// length, or any is short or non-finite.
+pub fn shared_period_3d(tracks: &[Vec<V3>], min_period: f64, max_period: f64) -> Option<f64> {
+    let n = tracks.first()?.len();
+    let mut pooled: Vec<Vec<f64>> = Vec::new();
+    for t in tracks {
+        if t.len() != n {
+            return None;
+        }
+        let cols = perpendicular_columns(t)?;
+        let power: f64 = cols
+            .iter()
+            .map(|c| {
+                let m = c.iter().sum::<f64>() / n as f64;
+                c.iter().map(|v| (v - m).powi(2)).sum::<f64>()
+            })
+            .sum();
+        let scale = if power > 0.0 { 1.0 / power.sqrt() } else { 0.0 };
+        pooled.extend(cols.into_iter().map(|c| c.into_iter().map(|v| v * scale).collect()));
+    }
+    dominant_period_cols(&pooled, min_period, max_period, 1.0)
 }
 
 /// 3D axis with its window set from the measured longest significant period.
@@ -308,6 +341,25 @@ mod tests {
         let integer = moving_axis_3d(&pts, 5);
         let ripple = |ax: &[V3]| ax[5..55].iter().map(|a| a[0].hypot(a[1])).fold(0.0, f64::max);
         assert!(ripple(&axis) < 0.5 * ripple(&integer));
+    }
+
+    #[test]
+    fn shared_period_outvotes_a_harmonic() {
+        let track = |harmonic: f64| -> Vec<V3> {
+            (0..200)
+                .map(|i| {
+                    let t = TAU * i as f64;
+                    [(t / 10.0).cos() + harmonic * (t / 5.0).cos(), (t / 10.0).sin() + harmonic * (t / 5.0).sin(), 0.01 * i as f64]
+                })
+                .collect()
+        };
+        let lone = track(1.2);
+        let alone = dominant_period_3d(&lone, 3.0, 40.0).unwrap();
+        assert!((alone - 5.0).abs() < 0.5, "alone {alone}");
+        let shared = shared_period_3d(&[lone, track(0.0), track(0.0)], 3.0, 40.0).unwrap();
+        assert!((shared - 10.0).abs() < 0.5, "shared {shared}");
+        assert!(shared_period_3d(&[], 3.0, 40.0).is_none());
+        assert!(shared_period_3d(&[track(0.0), track(0.0)[..100].to_vec()], 3.0, 40.0).is_none());
     }
 
     #[test]

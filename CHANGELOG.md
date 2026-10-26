@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- helix::shared_period_3d: one period pooled across simultaneous tracks (one vote per track), which stops a track dominated by a harmonic from setting the period.
+- xamples/sperm_beat.rs: real-data check on 135 human sperm flagellum centrelines (Zenodo 10.5281/zenodo.15299846). Positions agreeing with the pooled beat period: 94% (vs about 75% of cells when each position chose its own); tip amplitude over 1.5x head amplitude in 96% of cells.
+
 ## 0.5.0
 
 Refocus on moving-axis analysis of spirals and helices.
