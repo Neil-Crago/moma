@@ -11,7 +11,7 @@
 
 The crate also keeps its original ring-based tools (modular arithmetic with a movable origin, prime-based signatures, a little bioinformatics), described under [Legacy and experimental](#legacy-and-experimental).
 
-> **Status:** the spiral and helix tools are tested on synthetic data with known ground truth. They have not yet been validated on real measurements.
+> **Status:** the spiral and helix tools are tested on synthetic data with known ground truth. On real data (20 pea-shoot circumnutation tracks, `examples/real_track.rs`) a fixed or adaptive window of 100–400 samples **gave inconsistent results**, because the motion is an elongated, irregular ellipse with a period of 350–1900 samples, far longer than those windows. Setting the window to the *measured* dominant period (`dominant_period_3d`, `auto_axis_3d`) fixes most of this: across windows of 0.8–1.25 periods the median radius varies by 7–31% and the total turns by 10–40% (versus about 85% before). That is consistency, not accuracy: there is no ground truth for these tracks, signed turns are meaningless when the rotation sense reverses (use `total_turns`), and total turns includes jitter. The tools remain best suited to roughly steady helices (flagella, tendrils).
 
 ---
 

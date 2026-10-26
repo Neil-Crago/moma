@@ -157,6 +157,101 @@ pub fn radius_spread(polar: &[Polar]) -> f64 {
     var.sqrt() / mean
 }
 
+/// Nearest odd window length to `period` (at least 3). A centred moving mean over
+/// exactly one period removes that period and all its harmonics, however
+/// non-circular the orbit, which makes this the right window for the axis.
+pub fn window_for_period(period: f64) -> usize {
+    if !period.is_finite() {
+        return 3;
+    }
+    ((2.0 * ((period - 1.0) / 2.0).round() + 1.0).max(3.0)) as usize
+}
+
+/// Dominant oscillation period (in samples) of a 2D track, searched between
+/// `min_period` and `max_period`. A linear drift is removed and a Hann taper
+/// applied before a fine periodogram; the strongest interior spectral peak wins.
+/// Returns `None` for short or non-finite input, or an empty search range
+/// (`max_period` is capped at half the track length so two cycles are seen).
+pub fn dominant_period(points: &[(f64, f64)], min_period: f64, max_period: f64) -> Option<f64> {
+    let xs: Vec<f64> = points.iter().map(|p| p.0).collect();
+    let ys: Vec<f64> = points.iter().map(|p| p.1).collect();
+    dominant_period_cols(&[xs, ys], min_period, max_period)
+}
+
+/// Axis from a moving mean whose window is set from the measured dominant
+/// period. Returns the axis and the period used.
+pub fn auto_axis(
+    points: &[(f64, f64)],
+    min_period: f64,
+    max_period: f64,
+) -> Option<(Vec<(f64, f64)>, f64)> {
+    let p = dominant_period(points, min_period, max_period)?;
+    Some((moving_axis(points, window_for_period(p)), p))
+}
+
+pub(crate) fn dominant_period_cols(
+    cols: &[Vec<f64>],
+    min_period: f64,
+    max_period: f64,
+) -> Option<f64> {
+    let n = cols.first()?.len();
+    if n < 8 || cols.iter().any(|c| c.len() != n || c.iter().any(|v| !v.is_finite())) {
+        return None;
+    }
+    let max_p = max_period.min(n as f64 / 2.0);
+    if min_period.is_nan() || max_p.is_nan() || min_period < 2.0 || max_p <= min_period {
+        return None;
+    }
+    let prepared: Vec<Vec<f64>> = cols.iter().map(|c| detrend_and_taper(c)).collect();
+    let (f_lo, f_hi) = (1.0 / max_p, 1.0 / min_period);
+    let step = 1.0 / (4.0 * n as f64);
+    let count = ((f_hi - f_lo) / step).ceil() as usize + 1;
+    let power: Vec<f64> = (0..count)
+        .map(|s| {
+            let w = TAU * (f_lo + s as f64 * step);
+            prepared
+                .iter()
+                .map(|c| {
+                    let (mut re, mut im) = (0.0, 0.0);
+                    for (i, v) in c.iter().enumerate() {
+                        let (sn, cs) = (w * i as f64).sin_cos();
+                        re += v * cs;
+                        im += v * sn;
+                    }
+                    re * re + im * im
+                })
+                .sum()
+        })
+        .collect();
+    let interior_peak = (1..count.saturating_sub(1))
+        .filter(|&s| power[s] > power[s - 1] && power[s] >= power[s + 1])
+        .max_by(|&a, &b| power[a].total_cmp(&power[b]));
+    let best = interior_peak.or_else(|| (0..count).max_by(|&a, &b| power[a].total_cmp(&power[b])))?;
+    (power[best] > 0.0).then(|| 1.0 / (f_lo + best as f64 * step))
+}
+
+fn detrend_and_taper(c: &[f64]) -> Vec<f64> {
+    let n = c.len();
+    let tm = (n as f64 - 1.0) / 2.0;
+    let mean = c.iter().sum::<f64>() / n as f64;
+    let var_t: f64 = (0..n).map(|i| (i as f64 - tm).powi(2)).sum();
+    let slope = (0..n).map(|i| (i as f64 - tm) * (c[i] - mean)).sum::<f64>() / var_t.max(1e-12);
+    (0..n)
+        .map(|i| {
+            let hann = 0.5 * (1.0 - (TAU * i as f64 / (n as f64 - 1.0)).cos());
+            (c[i] - mean - slope * (i as f64 - tm)) * hann
+        })
+        .collect()
+}
+
+/// Total rotation travelled, in turns, ignoring direction (sum of |Δphase| / 2π
+/// over an unwrapped phase). Unlike [`winding_number`] it is not cancelled by
+/// reversals, so it suits motion whose rotation sense changes; it also counts
+/// jitter, so smooth noisy data first.
+pub fn total_turns(unwrapped: &[f64]) -> f64 {
+    unwrapped.windows(2).map(|w| (w[1] - w[0]).abs()).sum::<f64>() / TAU
+}
+
 /// Net number of full turns (signed) in an unwrapped phase series.
 pub fn winding_number(unwrapped: &[f64]) -> f64 {
     match (unwrapped.first(), unwrapped.last()) {
@@ -389,6 +484,45 @@ pub fn parse_xy(text: &str) -> Result<Vec<(f64, f64)>, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Elliptical, drifting orbit with a known period.
+    fn ellipse(n: usize, period: f64) -> Vec<(f64, f64)> {
+        (0..n)
+            .map(|i| {
+                let t = TAU * i as f64 / period;
+                (0.01 * i as f64 + 3.0 * t.cos(), 1.5 * t.sin())
+            })
+            .collect()
+    }
+
+    #[test]
+    fn finds_period_of_elliptical_orbit() {
+        let p = dominant_period(&ellipse(4000, 900.0), 100.0, 2000.0).unwrap();
+        assert!((p - 900.0).abs() < 30.0, "period {p}");
+    }
+
+    #[test]
+    fn auto_axis_removes_the_orbit() {
+        let pts = ellipse(4000, 900.0);
+        let (axis, _) = auto_axis(&pts, 100.0, 2000.0).unwrap();
+        let mid = 2000;
+        let r = ((pts[mid].0 - axis[mid].0).powi(2) + (pts[mid].1 - axis[mid].1).powi(2)).sqrt();
+        assert!(r > 1.0 && (axis[mid].0 - 0.01 * mid as f64).abs() < 0.5);
+    }
+
+    #[test]
+    fn total_turns_ignores_direction() {
+        let phase = [0.0, TAU, 0.0];
+        assert!((total_turns(&phase) - 2.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn period_rejects_bad_input() {
+        assert!(dominant_period(&[(0.0, 0.0); 4], 2.0, 10.0).is_none());
+        assert!(dominant_period(&ellipse(100, 20.0), f64::NAN, 50.0).is_none());
+        assert_eq!(window_for_period(f64::NAN), 3);
+        assert_eq!(window_for_period(900.0) % 2, 1);
+    }
 
     /// Spiral of radius `r` around a centre snaking along a sine path.
     fn snake(n: usize, r: f64) -> Vec<(f64, f64)> {

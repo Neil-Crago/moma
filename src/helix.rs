@@ -19,7 +19,10 @@
 //! assert!(radius_spread(&polar[40..260]) < 0.05);
 //! ```
 
-use crate::spiral::{fill_gaps_nd, moving_median_nd, outlier_mask, parse_rows, unwrap_phase, Polar};
+use crate::spiral::{
+    dominant_period_cols, fill_gaps_nd, moving_median_nd, outlier_mask, parse_rows, unwrap_phase,
+    window_for_period, Polar,
+};
 use std::f64::consts::TAU;
 
 /// A point or vector in 3D.
@@ -147,6 +150,43 @@ pub fn to_cylindrical(points: &[V3], axis: &[V3]) -> (Vec<Polar>, Vec<f64>) {
         along.push(a);
     }
     (polar, along)
+}
+
+/// Dominant oscillation period (in samples) of a 3D track: the periodogram peak
+/// of the two components perpendicular to the drift direction (a least-squares
+/// line through the track; with no usable drift, all three coordinates are used).
+/// See [`crate::spiral::dominant_period`] for the method and `None` cases.
+pub fn dominant_period_3d(points: &[V3], min_period: f64, max_period: f64) -> Option<f64> {
+    let n = points.len();
+    if n < 8 || points.iter().any(|p| p.iter().any(|v| !v.is_finite())) {
+        return None;
+    }
+    let tm = (n as f64 - 1.0) / 2.0;
+    let var_t: f64 = (0..n).map(|i| (i as f64 - tm).powi(2)).sum();
+    let mut slope = [0.0; 3];
+    for k in 0..3 {
+        let mean = points.iter().map(|p| p[k]).sum::<f64>() / n as f64;
+        slope[k] = (0..n).map(|i| (i as f64 - tm) * (points[i][k] - mean)).sum::<f64>() / var_t;
+    }
+    let cols: Vec<Vec<f64>> = match unit(slope) {
+        Some(d) => {
+            let e1 = any_perpendicular(d);
+            let e2 = cross(d, e1);
+            vec![
+                points.iter().map(|p| dot(*p, e1)).collect(),
+                points.iter().map(|p| dot(*p, e2)).collect(),
+            ]
+        }
+        None => (0..3).map(|k| points.iter().map(|p| p[k]).collect()).collect(),
+    };
+    dominant_period_cols(&cols, min_period, max_period)
+}
+
+/// 3D axis with its window set from the measured dominant period. Returns the
+/// axis and the period used.
+pub fn auto_axis_3d(points: &[V3], min_period: f64, max_period: f64) -> Option<(Vec<V3>, f64)> {
+    let p = dominant_period_3d(points, min_period, max_period)?;
+    Some((moving_axis_3d(points, window_for_period(p)), p))
 }
 
 /// Parses `x,y,z` rows (header, `#` comments and extra columns tolerated).
