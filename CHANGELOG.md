@@ -13,10 +13,11 @@ Refocus on moving-axis analysis of spirals and helices.
   (parallel-transported frame), `repair_3d`, `fill_gaps_3d`,
   `moving_median_axis_3d`, `parse_xyz`.
 - `consensus`: `ring_barycentre` (weighted circular mean on `Z_m`) and `plane_barycentre`.
-- Period-aware axis: `dominant_period`, `window_for_period`, `auto_axis`, `total_turns`
+- Period-aware axis: `dominant_period`, `window_for_period`, `auto_axis`, `total_turns`,
+  `total_turns_smoothed`
   (spiral) and `dominant_period_3d`, `auto_axis_3d` (helix). On 20 real pea tracks this
   cut the window-to-window spread of radius and turn count from about 85% to 7-40%.
-- Examples: `snaking_spiral`, `helix_stress`, `flagellum`, and `real_track`
+- Examples: `elliptical_bench` (synthetic elliptical, irregular and reversing rotation with ground truth), `snaking_spiral`, `helix_stress`, `flagellum`, and `real_track`
   (consistency check on real data; see `data/README.md` for the source).
 
 ### Fixed

@@ -252,6 +252,13 @@ pub fn total_turns(unwrapped: &[f64]) -> f64 {
     unwrapped.windows(2).map(|w| (w[1] - w[0]).abs()).sum::<f64>() / TAU
 }
 
+/// [`total_turns`] after smoothing the unwrapped phase with a centred moving mean
+/// of `window` samples, so noise-driven back-and-forth steps do not inflate the
+/// count. Choose a window well below the shortest real reversal timescale.
+pub fn total_turns_smoothed(unwrapped: &[f64], window: usize) -> f64 {
+    total_turns(&smooth_symmetric(unwrapped, window))
+}
+
 /// Net number of full turns (signed) in an unwrapped phase series.
 pub fn winding_number(unwrapped: &[f64]) -> f64 {
     match (unwrapped.first(), unwrapped.last()) {
@@ -508,6 +515,16 @@ mod tests {
         let mid = 2000;
         let r = ((pts[mid].0 - axis[mid].0).powi(2) + (pts[mid].1 - axis[mid].1).powi(2)).sqrt();
         assert!(r > 1.0 && (axis[mid].0 - 0.01 * mid as f64).abs() < 0.5);
+    }
+
+    #[test]
+    fn smoothed_turns_ignore_jitter() {
+        let phase: Vec<f64> = (0..400)
+            .map(|i| TAU * i as f64 / 100.0 + if i % 2 == 0 { 0.2 } else { -0.2 })
+            .collect();
+        let raw = total_turns(&phase);
+        let smooth = total_turns_smoothed(&phase, 11);
+        assert!(raw > 5.0 && (smooth - 3.99).abs() < 0.2, "{raw} {smooth}");
     }
 
     #[test]
