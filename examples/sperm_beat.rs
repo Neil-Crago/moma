@@ -45,6 +45,93 @@ fn median(v: &mut [f64]) -> f64 {
     v[v.len() / 2]
 }
 
+struct Rng(u64);
+impl Rng {
+    fn uniform(&mut self) -> f64 {
+        self.0 = self.0.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        ((self.0 >> 11) as f64 + 0.5) / (1u64 << 53) as f64
+    }
+    fn normal(&mut self) -> f64 {
+        (-2.0 * self.uniform().ln()).sqrt() * (std::f64::consts::TAU * self.uniform()).cos()
+    }
+}
+
+fn detrend(v: &[f64]) -> Vec<f64> {
+    let n = v.len() as f64;
+    let tm = (n - 1.0) / 2.0;
+    let mean = v.iter().sum::<f64>() / n;
+    let var_t: f64 = (0..v.len()).map(|i| (i as f64 - tm).powi(2)).sum();
+    let slope = v.iter().enumerate().map(|(i, x)| (i as f64 - tm) * (x - mean)).sum::<f64>() / var_t;
+    v.iter().enumerate().map(|(i, x)| x - mean - slope * (i as f64 - tm)).collect()
+}
+
+/// Largest periodogram line at integer frequencies `kmin..=kmax` (cycles per
+/// record), summed over components, as a share of the total variance.
+fn band_share(cols: &[Vec<f64>], kmin: usize, kmax: usize) -> f64 {
+    let n = cols[0].len();
+    let total: f64 = cols.iter().map(|c| c.iter().map(|v| v * v).sum::<f64>()).sum();
+    let mut best = 0.0f64;
+    for k in kmin..=kmax {
+        let w = std::f64::consts::TAU * k as f64 / n as f64;
+        let p: f64 = cols
+            .iter()
+            .map(|c| {
+                let (mut re, mut im) = (0.0, 0.0);
+                for (i, v) in c.iter().enumerate() {
+                    re += v * (w * i as f64).cos();
+                    im += v * (w * i as f64).sin();
+                }
+                re * re + im * im
+            })
+            .sum();
+        best = best.max(p / (n as f64 * total));
+    }
+    best
+}
+
+/// One-sided p-value: how often AR(1) red noise with each component's variance
+/// and lag-1 autocorrelation puts as much of its variance into the band as the
+/// track does. Linear drift is removed first; curved drift stays in the track and
+/// is absorbed by the red-noise null, which makes the test conservative.
+fn red_noise_p(track: &[V3], kmin: usize, kmax: usize, surrogates: usize, seed: u64) -> Option<f64> {
+    let n = track.len();
+    if kmin > kmax || kmax >= n / 2 {
+        return None;
+    }
+    let cols: Vec<Vec<f64>> = (0..3).map(|k| detrend(&track.iter().map(|p| p[k]).collect::<Vec<_>>())).collect();
+    let observed = band_share(&cols, kmin, kmax);
+    let params: Vec<(f64, f64)> = cols
+        .iter()
+        .map(|c| {
+            let var = c.iter().map(|v| v * v).sum::<f64>() / n as f64;
+            let cov = c.windows(2).map(|w| w[0] * w[1]).sum::<f64>() / n as f64;
+            ((cov / var.max(1e-300)).clamp(-0.99, 0.99), var.sqrt())
+        })
+        .collect();
+    let mut rng = Rng(seed);
+    let mut at_least = 0usize;
+    for _ in 0..surrogates {
+        let sur: Vec<Vec<f64>> = params
+            .iter()
+            .map(|&(phi, sd)| {
+                let innov = sd * (1.0 - phi * phi).sqrt();
+                let mut x = sd * rng.normal();
+                let v: Vec<f64> = (0..n)
+                    .map(|_| {
+                        x = phi * x + innov * rng.normal();
+                        x
+                    })
+                    .collect();
+                detrend(&v)
+            })
+            .collect();
+        if band_share(&sur, kmin, kmax) >= observed {
+            at_least += 1;
+        }
+    }
+    Some((at_least as f64 + 1.0) / (surrogates as f64 + 1.0))
+}
+
 struct Cell {
     name: String,
     frames: usize,
@@ -53,6 +140,8 @@ struct Cell {
     amplitudes: Vec<f64>,
     capacitating: bool,
     head_period: Option<f64>,
+    head_p: Option<f64>,
+    beat_p: Option<f64>,
 }
 
 fn analyse(dir: &Path) -> Option<Cell> {
@@ -114,7 +203,23 @@ fn analyse(dir: &Path) -> Option<Cell> {
     } else {
         None
     };
-    Some(Cell { name, frames, shared, own, amplitudes, capacitating, head_period })
+    let seed = frames as u64 * 7919 + rows as u64;
+    let nf = frames as f64;
+    // Slow band: periods from 1.5x the beat up to half the record.
+    let head_p = if head.iter().all(|p| p.iter().all(|v| v.is_finite())) {
+        red_noise_p(&head, 2, (nf / (1.5 * shared)).floor() as usize, 300, seed)
+    } else {
+        None
+    };
+    // Positive control: a mid-tail track in a band around the beat itself.
+    let beat_p = red_noise_p(
+        &tracks[tracks.len() / 2],
+        (nf / (1.2 * shared)).ceil() as usize,
+        (nf / (0.8 * shared)).floor() as usize,
+        300,
+        seed + 1,
+    );
+    Some(Cell { name, frames, shared, own, amplitudes, capacitating, head_period, head_p, beat_p })
 }
 
 /// Relation of a position's own period to the shared one: 1 if within 10%,
@@ -187,6 +292,16 @@ fn main() {
             g.len(), p, VOLUMES_PER_SECOND / p, a, ratio
         );
     }
+    let report = |label: &str, ps: Vec<f64>| {
+        if ps.is_empty() {
+            return;
+        }
+        let sig = ps.iter().filter(|&&p| p < 0.05).count() as f64 / ps.len() as f64;
+        println!("{label}: {} cells testable, {:.0}% significant at p<0.05 (5% expected from noise alone)", ps.len(), 100.0 * sig);
+    };
+    println!("\nred-noise (AR(1)) surrogate tests, 300 surrogates per cell:");
+    report("  tail beat band, positive control", results.iter().filter_map(|c| c.beat_p).collect());
+    report("  head slow band                   ", results.iter().filter_map(|c| c.head_p).collect());
     let mut heads: Vec<f64> =
         results.iter().filter_map(|c| c.head_period.map(|h| h / c.shared)).collect();
     if !heads.is_empty() {
