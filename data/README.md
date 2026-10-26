@@ -22,3 +22,11 @@ of the paper's headline), and after removing the net direction the residual
 helix of 0.2-1 µm radius is not reliably resolvable. Many tracks are also
 duplicates of the same cell, and the 400 fps readme disagrees with the stored
 frame rate (200 fps). It is a population-tracking dataset, not a flagellar-helix one.
+
+**Flagellin sequence clusters** (`41467_2024_53923_MOESM3_ESM.csv`, Nature
+Communications 2024 supplementary table 3; 16,948 rows of UniProt ID, cluster,
+organism, flagellin length, AlphaFold score, Pfam domains) and
+**`Flagellum_71_protein_dataset.tar.gz`** (figshare; 71 FASTA files of flagellar
+proteins). Neither contains coordinates or time series, so neither can test the
+axis or rotation tools. They are sequence and annotation data. Both are kept
+untracked and are not committed.
